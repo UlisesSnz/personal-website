@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFormatter, useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/navigation';
 import CanaryFlower from "./CanaryFlower";
+import CanaryRain from "./CanaryRain";
 import CanarySprite from "./CanarySprite";
 import CanarySpeechBubble from "./CanarySpeechBubble";
+import useCanaryRain from "./useCanaryRain";
 import {
   CANARY_ACTION_EVENT,
   DEFAULT_CANARY_ACTION,
@@ -496,7 +498,56 @@ const CanaryActionController = ({
     [getCanaryCenterPosition, getCanaryPositionForCenter, requestAction, size]
   );
 
+  const handleRainStart = useCallback(() => {
+    if (
+      actionStateRef.current.action !== DEFAULT_CANARY_ACTION ||
+      approachedFlowerSeedRef.current !== flowerStateRef.current.seed
+    ) return false;
+
+    const facing = flowerPositionRef.current >= getCanaryCenterPosition() ? 1 : -1;
+    setCanaryFacing(facing);
+    updateCanaryRuntimeState({ facing });
+    requestAction("alert", { duration: 650, ignoreCooldown: true, move: false });
+    return true;
+  }, [getCanaryCenterPosition, requestAction]);
+
+  const handleRainShelter = useCallback(() => {
+    const flowerPosition = flowerPositionRef.current;
+    const facing = flowerPosition >= getCanaryCenterPosition() ? 1 : -1;
+    // Keep room beside the stem when the flower returns to its normal size.
+    const shelterGap = Math.min(
+      26 / Math.max(stageWidthRef.current, 1),
+      Math.abs(flowerPosition - getCanaryCenterPosition())
+    );
+    const shelterCenter = flowerPosition - facing * shelterGap;
+    requestAction("hop", {
+      duration: 680,
+      facingDirection: facing,
+      ignoreCooldown: true,
+      targetPosition: getCanaryPositionForCenter(shelterCenter),
+    });
+  }, [getCanaryCenterPosition, getCanaryPositionForCenter, requestAction]);
+
+  const handleRainFinish = useCallback(() => {
+    if (actionStateRef.current.action === DEFAULT_CANARY_ACTION) {
+      requestAction("happy", { ignoreCooldown: true, move: false });
+    }
+  }, [requestAction]);
+
+  const rainEnabled = !isDarkMode && !isPageHidden && !isReadingFilter &&
+    !isReducedMotion && context.pageType !== "notFound";
+  const { isRaining, isSheltering, cancelRain } = useCanaryRain({
+    enabled: rainEnabled,
+    canStart: currentAction === DEFAULT_CANARY_ACTION && flowerState.visible &&
+      flowerReadySeed === flowerState.seed,
+    onStart: handleRainStart,
+    onShelter: handleRainShelter,
+    onFinish: handleRainFinish,
+    resetKey: entryKey,
+  });
+
   const handleCanaryClick = useCallback(() => {
+    cancelRain();
     if (["fly", "hop"].includes(actionStateRef.current.action)) {
       // Keep at most one reaction, scoped to this page, until landing.
       pendingSelfReactionRef.current = entryKey;
@@ -505,7 +556,7 @@ const CanaryActionController = ({
 
     pendingSelfReactionRef.current = null;
     requestAction("glitch", { duration: 700, force: true, move: false });
-  }, [entryKey, requestAction]);
+  }, [cancelRain, entryKey, requestAction]);
 
   useEffect(() => {
     if (
@@ -1028,6 +1079,7 @@ const CanaryActionController = ({
       isPageHidden ||
       isReadingFilter ||
       isReducedMotion ||
+      isRaining ||
       currentAction !== DEFAULT_CANARY_ACTION ||
       context.pageType === "notFound"
     ) {
@@ -1059,6 +1111,7 @@ const CanaryActionController = ({
     isPageHidden,
     isReadingFilter,
     isReducedMotion,
+    isRaining,
     requestAction,
   ]);
 
@@ -1069,7 +1122,8 @@ const CanaryActionController = ({
       isDarkMode ||
       isPageHidden ||
       isReadingFilter ||
-      isReducedMotion
+      isReducedMotion ||
+      isRaining
     ) {
       return undefined;
     }
@@ -1139,6 +1193,7 @@ const CanaryActionController = ({
     isPageHidden,
     isReadingFilter,
     isReducedMotion,
+    isRaining,
     requestAction,
   ]);
 
@@ -1163,7 +1218,7 @@ const CanaryActionController = ({
       return undefined;
     }
 
-    if (isPageHidden || isReadingFilter || isReducedMotion) {
+    if (isPageHidden || isReadingFilter || isReducedMotion || isRaining) {
       return undefined;
     }
 
@@ -1203,6 +1258,7 @@ const CanaryActionController = ({
     isPageHidden,
     isReadingFilter,
     isReducedMotion,
+    isRaining,
     spawnFlower,
   ]);
 
@@ -1325,6 +1381,15 @@ const CanaryActionController = ({
           "--canary-position": canaryPosition,
         }}
       >
+        {isRaining ? (
+          <CanaryRain
+            flowerPosition={flowerState.position}
+            stageWidth={stageWidth}
+            reach={getFlowerApproachOffset(stageWidth, size) * stageWidth + size / 2 + 12}
+            isSheltering={isSheltering}
+            shelterSide={canaryCenterPosition <= flowerState.position ? -1 : 1}
+          />
+        ) : null}
         {flowerState.visible && context.pageType !== "notFound" ? (
           <CanaryFlower
             key={flowerState.seed}
@@ -1332,6 +1397,8 @@ const CanaryActionController = ({
             onReady={handleFlowerReady}
             position={flowerState.position}
             reducedMotion={isReducedMotion}
+            isSheltering={isSheltering}
+            shelterSide={canaryCenterPosition <= flowerState.position ? -1 : 1}
             size={getFlowerSize(size)}
           />
         ) : null}

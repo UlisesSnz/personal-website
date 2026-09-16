@@ -97,6 +97,40 @@ html {
     pointer-events: none;
 }
 
+.canary-flower-anchor[data-sheltering] {
+    z-index: 2;
+}
+
+.canary-flower-art {
+    width: 100%;
+    height: 100%;
+    transform-origin: 50% 30%;
+    clip-path: inset(0);
+    transition:
+        transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+        clip-path 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.canary-flower-anchor[data-sheltering] .canary-flower-art {
+    /* Spread the existing petals into a canopy above the bird, rather than
+       enlarging the leaves and hiding the stem behind its body. */
+    clip-path: inset(0 0 48% 0);
+    transform: translate(calc(var(--canary-shelter-side) * 26px), calc(-20px + var(--canary-shelter-offset-y, 0px))) scale(3.2, 0.8);
+}
+
+.canary-flower-shelter-stem {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    transform: translateY(var(--canary-shelter-offset-y, 0px)) scaleX(var(--canary-shelter-side));
+    opacity: 0;
+    transition: opacity 400ms ease;
+}
+
+.canary-flower-anchor[data-sheltering] .canary-flower-shelter-stem {
+    opacity: 1;
+}
+
 .canary-flower-anchor::before,
 .canary-flower-anchor::after {
     content: "";
@@ -168,6 +202,80 @@ html {
     display: block;
     transform-origin: 50% 100%;
     will-change: transform;
+}
+
+.canary-rain {
+    position: absolute;
+    top: -52px;
+    height: 96px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 3;
+    animation: canary-rain-appear 240ms ease-out both;
+}
+
+.canary-rain-cloud {
+    position: absolute;
+    top: 10px;
+    left: 8%;
+    width: 84%;
+    height: 10px;
+    background: #94a3b8;
+    border-radius: 7px;
+}
+
+.canary-rain-cloud::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 18%;
+    width: 28%;
+    height: 16px;
+    background: #aab8c8;
+    border-radius: 50% 50% 0 0;
+}
+
+.canary-rain-cloud::after {
+    content: "";
+    position: absolute;
+    top: -4px;
+    right: 12%;
+    width: 22%;
+    height: 9px;
+    background: #aab8c8;
+    border-radius: 50% 50% 0 0;
+}
+
+.canary-rain-drop {
+    position: absolute;
+    top: 22px;
+    width: 2px;
+    height: 5px;
+    background: #60a5ba;
+    opacity: 0;
+    animation: canary-rain-fall 800ms linear infinite;
+}
+
+.canary-rain-drop[data-sheltered] {
+    /* Petals catch the drops; keep the space underneath dry. */
+    animation-name: canary-rain-sheltered;
+}
+
+@keyframes canary-rain-fall {
+    0% { opacity: 0; transform: translateY(0); }
+    15%, 75% { opacity: 0.65; }
+    100% { opacity: 0; transform: translateY(var(--canary-rain-fall-distance, 72px)); }
+}
+
+@keyframes canary-rain-sheltered {
+    0% { opacity: 0; transform: translateY(0); }
+    15%, 60% { opacity: 0.65; }
+    100% { opacity: 0; transform: translateY(var(--canary-rain-sheltered-distance, 16px)); }
+}
+
+@keyframes canary-rain-appear {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .canary-facing {
@@ -367,6 +475,31 @@ html {
     }
 }
 
+@media (max-width: 1023px) {
+    /* Fit the decorative shower inside the existing heading/toolbar gap. */
+    .canary-toolbar {
+        --canary-shelter-offset-y: 6px;
+    }
+
+    .canary-rain {
+        top: -30px;
+        height: 74px;
+        --canary-rain-fall-distance: 56px;
+        --canary-rain-sheltered-distance: 10px;
+    }
+
+    .canary-rain-cloud {
+        top: 2px;
+        transform: scaleY(0.55);
+        transform-origin: 50% 100%;
+    }
+
+    .canary-rain-drop {
+        top: 14px;
+        height: 3px;
+    }
+}
+
 @media (max-width: 639px) {
     .canary-stage {
         width: 100%;
@@ -379,6 +512,10 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .canary-rain {
+        display: none;
+    }
+
     .language-star {
         animation: none !important;
         opacity: 0.78;
@@ -399,6 +536,11 @@ html {
     }
 
     .canary-facing {
+        transition: none !important;
+    }
+
+    .canary-flower-art,
+    .canary-flower-shelter-stem {
         transition: none !important;
     }
 
