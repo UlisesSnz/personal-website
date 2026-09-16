@@ -33,6 +33,7 @@ const Post = ({
     const imageSrc = coverImage?.image || fallBackImage;
     const imageWidth = coverImage?.imageWidth || 1200;
     const imageHeight = coverImage?.imageHeight || 675;
+    const hasHeadings = Array.isArray(headings) && headings.length > 0;
   
     return (
         <>
@@ -93,10 +94,12 @@ const Post = ({
                     </figure>
 
                     <div className="grid grid-cols-12 gap-y-8 gap-16 xl:gap-8 md:gap-x-0 mt-8">
-                        <div className="col-span-4 lg:col-span-12">
-                            <TableOfContent headings={headings} />
-                        </div>
-                        <div className="col-span-8 lg:col-span-12 font-medium max-w-max">
+                        {hasHeadings && (
+                            <div className="col-span-4 lg:col-span-12">
+                                <TableOfContent headings={headings} />
+                            </div>
+                        )}
+                        <div className={`font-medium ${hasHeadings ? 'col-span-8 lg:col-span-12 max-w-max' : 'col-span-12 w-full'}`}>
                             <PortableText value={description} components={PortableTextComponents} />
                         </div>
                     </div>
