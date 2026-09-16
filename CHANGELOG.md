@@ -99,6 +99,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Animar estrellas sutiles alrededor del icono de idioma y respetar `prefers-reduced-motion`.
 - Unificar la separacion entre los iconos sociales y los controles de idioma y tema.
 - Aumentar a 28 px los controles de idioma y tema en mobile y separar visualmente las utilidades de las redes sociales.
+- Duplicar el espacio a cada lado del separador entre redes sociales y controles: de 12 a 24 px en escritorio y de 4 a 8 px en mobile pequeño.
 
 #### Commits de referencia
 
@@ -120,6 +121,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - [f99897e](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/f99897e) - fix: corregir terminologia de pronombres reflexivos
 - [ecab222](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/ecab222) - feat: mejorar selector de idioma animado
 - [1718031](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/1718031) - style: unificar controles de navegacion
+- [c20ce90](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/c20ce90) - style: ampliar separacion entre redes sociales y controles
 
 ### Q2 (Abr-Jun) - Modernizacion y estabilidad
 
