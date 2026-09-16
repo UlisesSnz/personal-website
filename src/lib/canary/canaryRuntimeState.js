@@ -19,7 +19,6 @@ const defaultRuntimeState = {
     seed: 0,
     visible: true,
   },
-  hasApproachedInitialFlower: false,
 };
 
 let canaryRuntimeState = {
@@ -64,10 +63,6 @@ export const updateCanaryRuntimeState = (nextState = {}) => {
         ? normalizeDirection(nextState.facing)
         : canaryRuntimeState.facing,
     flower: nextFlower,
-    hasApproachedInitialFlower:
-      typeof nextState.hasApproachedInitialFlower === "boolean"
-        ? nextState.hasApproachedInitialFlower
-        : canaryRuntimeState.hasApproachedInitialFlower,
   };
 
   return readCanaryRuntimeState();

@@ -48,7 +48,7 @@ const travelDurations = {
 
 const FLOWER_LIFETIME = 7600;
 const FLOWER_RESPAWN_DELAY = 1200;
-const FLOWER_APPROACH_DELAY = 1200;
+const FLOWER_APPROACH_DELAY = 350;
 const FLOWER_APPROACH_OFFSET = 0.04;
 const FLOWER_APPROACH_GAP = 5;
 const FLOWER_HOP_DISTANCE = 0.32;
@@ -182,9 +182,7 @@ const CanaryActionController = ({
   const flowerPositionRef = useRef(initialRuntimeState.flower.position);
   const flowerRespawnTimerRef = useRef(null);
   const flowerStateRef = useRef(initialRuntimeState.flower);
-  const hasApproachedInitialFlowerRef = useRef(
-    initialRuntimeState.hasApproachedInitialFlower
-  );
+  const approachedFlowerSeedRef = useRef(null);
   const heldFilterElementRef = useRef(null);
   const hoverReleaseTimerRef = useRef(null);
   const hoverTimerRef = useRef(null);
@@ -214,6 +212,7 @@ const CanaryActionController = ({
     initialRuntimeState.facing
   );
   const [flowerState, setFlowerState] = useState(initialRuntimeState.flower);
+  const [flowerReadySeed, setFlowerReadySeed] = useState(null);
   const [canaryPosition, setCanaryPosition] = useState(
     initialRuntimeState.position
   );
@@ -225,16 +224,17 @@ const CanaryActionController = ({
   }, []);
 
   const commitFlowerState = useCallback((updater) => {
-    setFlowerState((currentState) => {
-      const nextState =
-        typeof updater === "function" ? updater(currentState) : updater;
+    const nextState =
+      typeof updater === "function" ? updater(flowerStateRef.current) : updater;
+    flowerStateRef.current = nextState;
+    flowerPositionRef.current = nextState.position;
+    updateCanaryRuntimeState({ flower: nextState });
+    setFlowerState(nextState);
+  }, []);
 
-      flowerStateRef.current = nextState;
-      flowerPositionRef.current = nextState.position;
-      updateCanaryRuntimeState({ flower: nextState });
-
-      return nextState;
-    });
+  const handleFlowerReady = useCallback((seed) => {
+    const flower = flowerStateRef.current;
+    if (flower.visible && flower.seed === seed) setFlowerReadySeed(seed);
   }, []);
 
   const normalizedDialogues = useMemo(
@@ -500,8 +500,7 @@ const CanaryActionController = ({
       seed: currentState.seed + 1,
       visible: true,
     }));
-    approachFlower(nextPosition);
-  }, [approachFlower, commitFlowerState]);
+  }, [commitFlowerState]);
 
   useEffect(() => {
     const updateThemeState = () => {
@@ -981,7 +980,10 @@ const CanaryActionController = ({
 
   useEffect(() => {
     if (
-      hasApproachedInitialFlowerRef.current ||
+      !flowerState.visible ||
+      flowerReadySeed !== flowerState.seed ||
+      approachedFlowerSeedRef.current === flowerState.seed ||
+      !["idle", "blink"].includes(currentAction) ||
       context.pageType === "notFound" ||
       isDarkMode ||
       isPageHidden ||
@@ -992,8 +994,7 @@ const CanaryActionController = ({
     }
 
     flowerApproachTimerRef.current = window.setTimeout(() => {
-      hasApproachedInitialFlowerRef.current = true;
-      updateCanaryRuntimeState({ hasApproachedInitialFlower: true });
+      approachedFlowerSeedRef.current = flowerState.seed;
       approachFlower(flowerPositionRef.current);
       flowerApproachTimerRef.current = null;
     }, FLOWER_APPROACH_DELAY);
@@ -1004,6 +1005,10 @@ const CanaryActionController = ({
   }, [
     approachFlower,
     context.pageType,
+    currentAction,
+    flowerReadySeed,
+    flowerState.seed,
+    flowerState.visible,
     isDarkMode,
     isPageHidden,
     isReadingFilter,
@@ -1046,16 +1051,15 @@ const CanaryActionController = ({
       };
     }
 
+    // Count the flower's lifetime from its rendered appearance, including on
+    // slow connections, rather than from when its canvas was mounted.
+    if (flowerReadySeed !== flowerState.seed) return undefined;
+
     flowerLifeTimerRef.current = window.setTimeout(() => {
       commitFlowerState((currentState) => ({
         ...currentState,
         visible: false,
       }));
-
-      flowerRespawnTimerRef.current = window.setTimeout(() => {
-        spawnFlower();
-        flowerRespawnTimerRef.current = null;
-      }, FLOWER_RESPAWN_DELAY);
     }, FLOWER_LIFETIME);
 
     return () => {
@@ -1065,6 +1069,7 @@ const CanaryActionController = ({
   }, [
     commitFlowerState,
     context.pageType,
+    flowerReadySeed,
     flowerState.seed,
     flowerState.visible,
     isDarkMode,
@@ -1086,7 +1091,6 @@ const CanaryActionController = ({
         direction: positionDirectionRef.current,
         facing: positionDirectionRef.current,
         flower: flowerStateRef.current,
-        hasApproachedInitialFlower: hasApproachedInitialFlowerRef.current,
       });
       entryKeyRef.current = "";
     };
@@ -1197,6 +1201,8 @@ const CanaryActionController = ({
         {flowerState.visible && context.pageType !== "notFound" ? (
           <CanaryFlower
             key={flowerState.seed}
+            seed={flowerState.seed}
+            onReady={handleFlowerReady}
             position={flowerState.position}
             reducedMotion={isReducedMotion}
             size={getFlowerSize(size)}

@@ -10,7 +10,17 @@ import {
   normalizeCanaryAction,
 } from "@/lib/canary/canaryActions";
 
-let hasPreloadedCanaryFrames = false;
+// Keep the small sprite images mounted across actions so a transition never
+// replaces a decoded frame with a newly mounted, still-loading image.
+const canaryFrames = CANARY_ACTION_NAMES.flatMap((action) => {
+  const config = getCanaryActionConfig(action);
+  return Array.from({ length: config.frames }, (_, frameIndex) => ({
+    action,
+    frameIndex,
+    src: getCanaryFrameSrc(action, frameIndex),
+    style: config.frameStyles?.[frameIndex] || {},
+  }));
+});
 
 const CanarySprite = ({
   action = "idle",
@@ -21,42 +31,30 @@ const CanarySprite = ({
 }) => {
   const normalizedAction = normalizeCanaryAction(action);
   const config = getCanaryActionConfig(normalizedAction);
+  const [loadedFrames, setLoadedFrames] = useState(() => new Set());
+  const isActionReady = canaryFrames
+    .filter((frame) => frame.action === normalizedAction)
+    .every((frame) => loadedFrames.has(frame.src));
   const [frameState, setFrameState] = useState({
     action: normalizedAction,
     frameIndex: 0,
   });
   const frameIndex =
     frameState.action === normalizedAction ? frameState.frameIndex : 0;
-  const displayedFrameIndex = reducedMotion ? 0 : frameIndex;
-  const frameIndexes = Array.from(
-    { length: config.frames },
-    (_, candidateFrameIndex) => candidateFrameIndex
-  );
+  const lastFrameSrc = getCanaryFrameSrc(frameState.action, frameState.frameIndex);
+  const fallbackFrame = loadedFrames.has(lastFrameSrc)
+    ? frameState
+    : canaryFrames.find((frame) => loadedFrames.has(frame.src)) || {
+        action: "idle",
+        frameIndex: 0,
+      };
+  const displayedAction = isActionReady ? normalizedAction : fallbackFrame.action;
+  const displayedFrameIndex = isActionReady
+    ? (reducedMotion ? 0 : frameIndex)
+    : fallbackFrame.frameIndex;
 
   useEffect(() => {
-    if (hasPreloadedCanaryFrames) {
-      return;
-    }
-
-    hasPreloadedCanaryFrames = true;
-    CANARY_ACTION_NAMES.forEach((actionName) => {
-      const actionConfig = getCanaryActionConfig(actionName);
-
-      Array.from({ length: actionConfig.frames }).forEach(
-        (_, candidateFrameIndex) => {
-          const image = new window.Image();
-
-          image.src = getCanaryFrameSrc(actionName, candidateFrameIndex);
-          if (typeof image.decode === "function") {
-            image.decode().catch(() => {});
-          }
-        }
-      );
-    });
-  }, []);
-
-  useEffect(() => {
-    if (reducedMotion || config.frames <= 1) {
+    if (!isActionReady || reducedMotion || config.frames <= 1) {
       return undefined;
     }
 
@@ -83,7 +81,14 @@ const CanarySprite = ({
     }, 1000 / config.fps);
 
     return () => window.clearInterval(interval);
-  }, [config.fps, config.frames, config.loop, normalizedAction, reducedMotion]);
+  }, [
+    config.fps,
+    config.frames,
+    config.loop,
+    isActionReady,
+    normalizedAction,
+    reducedMotion,
+  ]);
 
   return (
     <span
@@ -93,19 +98,27 @@ const CanarySprite = ({
         height: size,
       }}
     >
-      {frameIndexes.map((candidateFrameIndex) => {
-        const isVisibleFrame = candidateFrameIndex === displayedFrameIndex;
-        const frameStyle = config.frameStyles?.[candidateFrameIndex] || {};
+      {canaryFrames.map((frame) => {
+        const isVisibleFrame =
+          frame.action === displayedAction &&
+          frame.frameIndex === displayedFrameIndex;
 
         return (
           <Image
-            key={`${normalizedAction}-${candidateFrameIndex}`}
-            src={getCanaryFrameSrc(normalizedAction, candidateFrameIndex)}
+            key={frame.src}
+            src={frame.src}
             alt={isVisibleFrame ? alt : ""}
             aria-hidden={!isVisibleFrame}
             width={size}
             height={size}
             unoptimized
+            loading="eager"
+            onLoad={() =>
+              setLoadedFrames((current) => {
+                if (current.has(frame.src)) return current;
+                return new Set(current).add(frame.src);
+              })
+            }
             draggable={false}
             className={`absolute inset-0 h-full w-full select-none object-contain ${
               isVisibleFrame ? "opacity-100" : "opacity-0"
@@ -113,7 +126,7 @@ const CanarySprite = ({
             sizes={`${size}px`}
             style={{
               imageRendering: "pixelated",
-              ...frameStyle,
+              ...frame.style,
             }}
           />
         );
