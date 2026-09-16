@@ -39,6 +39,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Se localizaron contenido, navegacion, formularios, accesibilidad y metadata SEO mediante next-intl y Sanity.
 - Se agrego un selector de idioma compacto con icono animado que conserva la ruta, los slugs traducidos y los filtros activos.
 - Se valido la integracion de filtros, internacionalizacion, SEO y Canary con build de produccion usando Turbopack.
+- Se oculto la tabla de contenido vacia en posts y proyectos para aprovechar todo el ancho disponible.
 
 #### Feature
 
@@ -103,6 +104,8 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Cancelar la lluvia y sus reacciones pendientes al hacer clic en Canary, leer filtros, cambiar de pagina, ocultarla, entrar en modo oscuro o activar movimiento reducido.
 - Mantener filtros, comentarios y enlaces internos dentro del locale activo.
 - Corregir alternates automaticos, metadata de traduccion y detalles editoriales del contenido ingles.
+- Ocultar la tabla de contenido y su columna cuando no hay encabezados H2 o H3, permitiendo que el texto ocupe todo el ancho en posts y proyectos.
+- Evitar el renderizado del indice cuando la lista de encabezados esta vacia, es nula o no esta definida, conservando la jerarquia y los enlaces cuando hay titulos.
 
 #### Style
 
@@ -144,6 +147,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - [2ac951d](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/2ac951d) - feat: variar reposo de Canary y estabilizar interacciones
 - [b49d694](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/b49d694) - feat: agregar busqueda y orientacion natural de Canary
 - [20de65b](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/20de65b) - feat: agregar lluvia y refugio floral para Canary
+- [d99223e](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/d99223e) - fix: ocultar tabla de contenido vacia
 
 ### Q2 (Abr-Jun) - Modernizacion y estabilidad
 
