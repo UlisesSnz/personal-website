@@ -25,18 +25,10 @@ import {
   readCanaryRuntimeState,
   updateCanaryRuntimeState,
 } from "@/lib/canary/canaryRuntimeState";
-
-const ambientActions = [
-  { action: "blink", move: false },
-  { action: "blink", move: false },
-  { action: "blink", move: false },
-  { action: "blink", move: false },
-  { action: "hop", duration: 620, move: false, priority: 16 },
-  { action: "hop", duration: 620, move: false, priority: 16 },
-  { action: "glitch", duration: 850, move: false, priority: 18 },
-];
-
-const reducedMotionAmbientActions = [{ action: "blink", move: false }];
+import {
+  getCanaryRestDelay,
+  pickCanaryAmbientAction,
+} from "@/lib/canary/canaryAmbient";
 
 const travelDurations = {
   alert: "180ms",
@@ -56,6 +48,8 @@ const TOOLBAR_BUBBLE_GAP = 10;
 const TOOLBAR_BUBBLE_READABLE_WIDTH = 156;
 const TOUCH_FILTER_MESSAGE_DURATION = 3400;
 const TOUCH_POINTER_WINDOW = 1400;
+const EMPTY_CONTEXT = {};
+const EMPTY_DIALOGUES = [];
 const flowerPositions = [0.13, 0.26, 0.39, 0.54, 0.69, 0.84];
 
 const canaryDatasetSelector =
@@ -165,8 +159,8 @@ const getFlowerApproachCenter = (
 
 const CanaryActionController = ({
   className = "",
-  context = {},
-  dialogues = [],
+  context = EMPTY_CONTEXT,
+  dialogues = EMPTY_DIALOGUES,
   initialAction,
   size = DEFAULT_CANARY_SIZE,
 }) => {
@@ -187,6 +181,8 @@ const CanaryActionController = ({
   const hoverReleaseTimerRef = useRef(null);
   const hoverTimerRef = useRef(null);
   const lastPointerRef = useRef({ timestamp: 0, type: "mouse" });
+  const lastAmbientActionRef = useRef(null);
+  const pendingSelfReactionRef = useRef(null);
   const lastDatasetElementRef = useRef(null);
   const messageRef = useRef("");
   const messageTimerRef = useRef(null);
@@ -492,6 +488,36 @@ const CanaryActionController = ({
     [getCanaryCenterPosition, getCanaryPositionForCenter, requestAction, size]
   );
 
+  const handleCanaryClick = useCallback(() => {
+    if (["fly", "hop"].includes(actionStateRef.current.action)) {
+      // Keep at most one reaction, scoped to this page, until landing.
+      pendingSelfReactionRef.current = entryKey;
+      return;
+    }
+
+    pendingSelfReactionRef.current = null;
+    requestAction("glitch", { duration: 700, force: true, move: false });
+  }, [entryKey, requestAction]);
+
+  useEffect(() => {
+    if (
+      isDarkMode ||
+      isPageHidden ||
+      isReadingFilter ||
+      pendingSelfReactionRef.current !== entryKey
+    ) {
+      pendingSelfReactionRef.current = null;
+      return;
+    }
+
+    if (currentAction === DEFAULT_CANARY_ACTION) {
+      pendingSelfReactionRef.current = null;
+      requestAction("glitch", { duration: 700, force: true, move: false });
+    } else if (!["fly", "hop"].includes(currentAction)) {
+      pendingSelfReactionRef.current = null;
+    }
+  }, [currentAction, entryKey, isDarkMode, isPageHidden, isReadingFilter, requestAction]);
+
   const spawnFlower = useCallback(() => {
     const nextPosition = pickNextFlowerPosition(flowerPositionRef.current);
 
@@ -649,6 +675,39 @@ const CanaryActionController = ({
       clearTouchFilterReleaseTimer();
       heldFilterElementRef.current = element;
       setIsReadingFilter(true);
+
+      // Opening a touch menu can also emit mouse/focus events for its items.
+      if (isRecentTouchInteraction()) {
+        scheduleTouchFilterRelease(element, element.dataset.canaryMessage);
+      }
+    };
+
+    const cancelFilterReading = () => {
+      clearHoverTimer();
+      clearHoverReleaseTimer();
+      clearTouchFilterReleaseTimer();
+      lastDatasetElementRef.current = null;
+
+      const element = heldFilterElementRef.current;
+      if (!element) return;
+
+      heldFilterElementRef.current = null;
+      setIsReadingFilter(false);
+
+      // Only dismiss the held filter message, not a newer unrelated reaction.
+      if (messageRef.current === element.dataset.canaryMessage) {
+        clearTimeoutRef(messageTimerRef);
+        updateMessage("");
+
+        if (actionStateRef.current.action === "talk") {
+          clearTimeoutRef(actionTimerRef);
+          resetActionToDefault();
+        }
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) cancelFilterReading();
     };
 
     const releaseFilterReading = (element) => {
@@ -713,10 +772,25 @@ const CanaryActionController = ({
         timestamp: Date.now(),
         type: event.pointerType || "mouse",
       };
+
+      const heldElement = heldFilterElementRef.current;
+      if (heldElement && !heldElement.contains(event.target)) {
+        cancelFilterReading();
+      }
     };
 
     const handlePointerOver = (event) => {
       const element = event.target.closest(canaryDatasetSelector);
+
+      // A removed menu item may never emit pointerout; reconcile on re-entry.
+      const heldElement = heldFilterElementRef.current;
+      if (
+        heldElement &&
+        heldElement !== element &&
+        !heldElement.contains(document.activeElement)
+      ) {
+        releaseFilterReading(heldElement);
+      }
 
       if (!element) {
         return;
@@ -861,17 +935,19 @@ const CanaryActionController = ({
     document.addEventListener("focusin", handleFocusIn, true);
     document.addEventListener("focusout", handleFocusOut, true);
     document.addEventListener("click", handleClick, true);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", cancelFilterReading);
 
     return () => {
-      clearHoverTimer();
-      clearHoverReleaseTimer();
-      clearTouchFilterReleaseTimer();
+      cancelFilterReading();
       document.removeEventListener("pointerdown", handlePointerDown, true);
       document.removeEventListener("pointerover", handlePointerOver, true);
       document.removeEventListener("pointerout", handlePointerOut, true);
       document.removeEventListener("focusin", handleFocusIn, true);
       document.removeEventListener("focusout", handleFocusOut, true);
       document.removeEventListener("click", handleClick, true);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", cancelFilterReading);
     };
   }, [
     pickMessageForTrigger,
@@ -943,34 +1019,34 @@ const CanaryActionController = ({
       isDarkMode ||
       isPageHidden ||
       isReadingFilter ||
+      isReducedMotion ||
+      currentAction !== DEFAULT_CANARY_ACTION ||
       context.pageType === "notFound"
     ) {
       return undefined;
     }
 
-    const interval = window.setInterval(() => {
-      if (actionStateRef.current.action !== DEFAULT_CANARY_ACTION) {
-        return;
-      }
+    let timer;
+    const scheduleNext = () => {
+      timer = window.setTimeout(() => {
+        if (actionStateRef.current.action !== DEFAULT_CANARY_ACTION) return;
 
-      const availableAmbientActions = isReducedMotion
-        ? reducedMotionAmbientActions
-        : ambientActions;
-      const ambientAction =
-        availableAmbientActions[
-          Math.floor(Math.random() * availableAmbientActions.length)
-        ];
+        const action = pickCanaryAmbientAction(lastAmbientActionRef.current);
+        if (action === null) {
+          scheduleNext();
+          return;
+        }
 
-      requestAction(ambientAction.action, {
-        duration: ambientAction.duration,
-        move: ambientAction.move,
-        priority: ambientAction.priority,
-      });
-    }, 7600);
+        lastAmbientActionRef.current = action;
+        requestAction(action, { move: false, priority: 16 });
+      }, getCanaryRestDelay());
+    };
 
-    return () => window.clearInterval(interval);
+    scheduleNext();
+    return () => window.clearTimeout(timer);
   }, [
     context.pageType,
+    currentAction,
     isDarkMode,
     isPageHidden,
     isReadingFilter,
@@ -1220,14 +1296,12 @@ const CanaryActionController = ({
             type="button"
             aria-label={t('activateGlitch')}
             className="canary-hitbox shrink-0 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary dark:focus-visible:outline-primaryDark"
-            onClick={() =>
-              requestAction("glitch", {
-                duration: 700,
-                force: true,
-                move: false,
-              })
-            }
-            onMouseEnter={() => requestAction("blink", { move: false })}
+            onClick={handleCanaryClick}
+            onMouseEnter={() => {
+              if (!["fly", "hop"].includes(actionStateRef.current.action)) {
+                requestAction("blink", { move: false });
+              }
+            }}
           >
             <span className={gestureClass}>
               <span
