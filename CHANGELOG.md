@@ -85,6 +85,9 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Orientar a Canary hacia la flor cuando aparece cerca sin requerir desplazamiento.
 - Evitar que la vineta de Canary choque con los botones de filtros en mobile.
 - Mantener visible la vineta tras taps en filtros para permitir lectura en interacciones tactiles.
+- Evitar desapariciones de Canary al cambiar de animacion, conservando los fotogramas montados y una imagen cargada mientras se prepara la siguiente accion.
+- Esperar a que la flor termine de aparecer antes de iniciar su tiempo visible y la persecucion, con una pausa de reaccion de 350 ms.
+- Mostrar la flor completamente formada y sin movimiento cuando se activa la preferencia de movimiento reducido.
 - Mantener filtros, comentarios y enlaces internos dentro del locale activo.
 - Corregir alternates automaticos, metadata de traduccion y detalles editoriales del contenido ingles.
 
@@ -122,6 +125,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - [ecab222](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/ecab222) - feat: mejorar selector de idioma animado
 - [1718031](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/1718031) - style: unificar controles de navegacion
 - [c20ce90](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/c20ce90) - style: ampliar separacion entre redes sociales y controles
+- [460b9cd](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/460b9cd) - fix: estabilizar animaciones y persecucion de Canary
 
 ### Q2 (Abr-Jun) - Modernizacion y estabilidad
 
