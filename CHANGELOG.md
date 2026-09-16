@@ -34,6 +34,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Se agrego una flor ambiental para dar dinamismo a la mascota y conservar su estado entre vistas.
 - Se ajusto la lectura de vinetas de Canary en mobile y la convivencia con los controles de filtros.
 - Se diversifico el reposo de Canary y se corrigieron las reacciones pendientes y los mensajes de filtros retenidos.
+- Se agrego una busqueda variable de la flor y una lluvia ocasional en la que Canary se cobija bajo sus petalos.
 - Se incorporo internacionalizacion completa en espanol e ingles con rutas publicas prefijadas por locale.
 - Se localizaron contenido, navegacion, formularios, accesibilidad y metadata SEO mediante next-intl y Sanity.
 - Se agrego un selector de idioma compacto con icono animado que conserva la ruta, los slugs traducidos y los filtros activos.
@@ -65,6 +66,9 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Incorporar Flower como animacion ambiental que atrae a Canary y se comporta como lampara en modo oscuro.
 - Variar el reposo de Canary con pausas aleatorias de 5 a 11 segundos, parpadeos, curiosidad, saltos ocasionales y momentos de quietud sin repetir el ultimo gesto.
 - Reservar el glitch para la interaccion directa y acumular como maximo una reaccion al hacer clic durante un vuelo o salto, ejecutandola despues de aterrizar.
+- Agregar una busqueda de la flor con miradas a uno o ambos lados y pausas variables antes de acercarse, reutilizando las animaciones de curiosidad y parpadeo.
+- Incorporar lluvias breves de 4 a 6 segundos, con esperas aleatorias de 35 a 70 segundos y comienzo cuando Canary esta en reposo junto a la flor.
+- Hacer que Canary se sorprenda, mire hacia la flor y salte para cobijarse bajo sus petalos, con una celebracion al terminar y retorno de la flor a su forma normal.
 - Integrar rutas `/es` y `/en` con mensajes localizados y formatos regionales `es-MX` y `en`.
 - Localizar documentos de Sanity por idioma y enlazar sus versiones mediante metadata de traduccion.
 - Resolver slugs editoriales entre idiomas y preservar query params al cambiar de locale.
@@ -89,11 +93,14 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Evitar que la vineta de Canary choque con los botones de filtros en mobile.
 - Mantener visible la vineta tras taps en filtros para permitir lectura en interacciones tactiles.
 - Evitar desapariciones de Canary al cambiar de animacion, conservando los fotogramas montados y una imagen cargada mientras se prepara la siguiente accion.
-- Esperar a que la flor termine de aparecer antes de iniciar su tiempo visible y la persecucion, con una pausa de reaccion de 350 ms.
+- Esperar a que la flor termine de aparecer antes de iniciar su tiempo visible y la persecucion, con una pausa de reaccion variable.
 - Mostrar la flor completamente formada y sin movimiento cuando se activa la preferencia de movimiento reducido.
 - Evitar que pasar el cursor sobre Canary interrumpa un vuelo o salto en curso.
 - Liberar la lectura de filtros al perder el foco, ocultar la pagina o interactuar fuera del control, incluso cuando una opcion desaparece sin emitir su evento de salida.
 - Mantener limitada la duracion de los mensajes tactiles y estabilizar los valores predeterminados para evitar cancelaciones de temporizadores en cada render.
+- Orientar a Canary hacia la flor antes de iniciar el desplazamiento y evitar que retroceda cuando ya se encuentra cerca.
+- Pausar la busqueda, los gestos ambientales y la desaparicion de la flor durante la lluvia para completar la escena de refugio.
+- Cancelar la lluvia y sus reacciones pendientes al hacer clic en Canary, leer filtros, cambiar de pagina, ocultarla, entrar en modo oscuro o activar movimiento reducido.
 - Mantener filtros, comentarios y enlaces internos dentro del locale activo.
 - Corregir alternates automaticos, metadata de traduccion y detalles editoriales del contenido ingles.
 
@@ -104,6 +111,8 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Agregar icono de etiqueta reconocible para el filtro de tags.
 - Marcar el elemento activo con color primario y fondo suave sin indicadores redundantes.
 - Alinear Canary, Flower y la vineta con la fila compacta de controles.
+- Extender la nube sobre Canary y la flor, con los petalos formando una cubierta elevada, el tallo a un costado y las gotas detenidas sobre el refugio.
+- Compactar la lluvia en pantallas pequenas para conservar el espaciado original entre el titulo, Canary y los filtros antes, durante y despues de la animacion.
 - Igualar tamano, alineacion y contraste del selector de idioma con el control de tema.
 - Animar estrellas sutiles alrededor del icono de idioma y respetar `prefers-reduced-motion`.
 - Unificar la separacion entre los iconos sociales y los controles de idioma y tema.
@@ -133,6 +142,8 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - [c20ce90](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/c20ce90) - style: ampliar separacion entre redes sociales y controles
 - [460b9cd](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/460b9cd) - fix: estabilizar animaciones y persecucion de Canary
 - [2ac951d](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/2ac951d) - feat: variar reposo de Canary y estabilizar interacciones
+- [b49d694](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/b49d694) - feat: agregar busqueda y orientacion natural de Canary
+- [20de65b](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/20de65b) - feat: agregar lluvia y refugio floral para Canary
 
 ### Q2 (Abr-Jun) - Modernizacion y estabilidad
 
