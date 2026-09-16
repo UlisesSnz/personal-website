@@ -29,6 +29,7 @@ import {
   getCanaryRestDelay,
   pickCanaryAmbientAction,
 } from "@/lib/canary/canaryAmbient";
+import { createCanaryFlowerSearch } from "@/lib/canary/canaryFlowerSearch";
 
 const travelDurations = {
   alert: "180ms",
@@ -40,7 +41,6 @@ const travelDurations = {
 
 const FLOWER_LIFETIME = 7600;
 const FLOWER_RESPAWN_DELAY = 1200;
-const FLOWER_APPROACH_DELAY = 350;
 const FLOWER_APPROACH_OFFSET = 0.04;
 const FLOWER_APPROACH_GAP = 5;
 const FLOWER_HOP_DISTANCE = 0.32;
@@ -176,6 +176,7 @@ const CanaryActionController = ({
   const flowerPositionRef = useRef(initialRuntimeState.flower.position);
   const flowerRespawnTimerRef = useRef(null);
   const flowerStateRef = useRef(initialRuntimeState.flower);
+  const flowerSearchRef = useRef(null);
   const approachedFlowerSeedRef = useRef(null);
   const heldFilterElementRef = useRef(null);
   const hoverReleaseTimerRef = useRef(null);
@@ -465,6 +466,13 @@ const CanaryActionController = ({
   const approachFlower = useCallback(
     (flowerPosition) => {
       const canaryCenterPosition = getCanaryCenterPosition();
+      // Already looking at a nearby flower: do not back away just to reach
+      // the standard approach gap, especially in the compact mobile stage.
+      if (
+        Math.abs(flowerPosition - canaryCenterPosition) <=
+        getFlowerApproachOffset(stageWidthRef.current, size)
+      ) return;
+
       const targetCenterPosition = getFlowerApproachCenter(
         flowerPosition,
         canaryCenterPosition,
@@ -1056,10 +1064,7 @@ const CanaryActionController = ({
 
   useEffect(() => {
     if (
-      !flowerState.visible ||
-      flowerReadySeed !== flowerState.seed ||
-      approachedFlowerSeedRef.current === flowerState.seed ||
-      !["idle", "blink"].includes(currentAction) ||
+      currentAction !== DEFAULT_CANARY_ACTION ||
       context.pageType === "notFound" ||
       isDarkMode ||
       isPageHidden ||
@@ -1069,11 +1074,55 @@ const CanaryActionController = ({
       return undefined;
     }
 
+    // Start looking when the old flower disappears, without knowing where
+    // the next one will grow. Keep the same short search through its respawn.
+    const searchSeed = flowerState.visible ? flowerState.seed : flowerState.seed + 1;
+    if (approachedFlowerSeedRef.current === searchSeed) return undefined;
+
+    if (flowerSearchRef.current?.seed !== searchSeed) {
+      flowerSearchRef.current = {
+        ...createCanaryFlowerSearch(),
+        seed: searchSeed,
+        nextLook: 0,
+      };
+    }
+
+    const search = flowerSearchRef.current;
+    const look = search.looks[search.nextLook];
+    if (!look && (!flowerState.visible || flowerReadySeed !== flowerState.seed)) {
+      return undefined;
+    }
+
     flowerApproachTimerRef.current = window.setTimeout(() => {
-      approachedFlowerSeedRef.current = flowerState.seed;
-      approachFlower(flowerPositionRef.current);
       flowerApproachTimerRef.current = null;
-    }, FLOWER_APPROACH_DELAY);
+      if (actionStateRef.current.action !== DEFAULT_CANARY_ACTION) return;
+
+      if (look) {
+        search.nextLook += 1;
+        setCanaryFacing(look.facing);
+        updateCanaryRuntimeState({ facing: look.facing });
+        requestAction(look.action, { ignoreCooldown: true, move: false, priority: 16 });
+      } else {
+        const canApproach = () =>
+          actionStateRef.current.action === DEFAULT_CANARY_ACTION &&
+          flowerStateRef.current.visible &&
+          flowerStateRef.current.seed === search.seed;
+        if (!canApproach()) return;
+
+        // Spot the visible flower and hold that gaze before taking off.
+        const facing = flowerPositionRef.current >= getCanaryCenterPosition() ? 1 : -1;
+        setCanaryFacing(facing);
+        updateCanaryRuntimeState({ facing });
+
+        flowerApproachTimerRef.current = window.setTimeout(() => {
+          flowerApproachTimerRef.current = null;
+          if (!canApproach()) return;
+
+          approachedFlowerSeedRef.current = flowerState.seed;
+          approachFlower(flowerPositionRef.current);
+        }, search.approachDelay);
+      }
+    }, look ? look.delay : 0);
 
     return () => {
       clearTimeoutRef(flowerApproachTimerRef);
@@ -1085,10 +1134,12 @@ const CanaryActionController = ({
     flowerReadySeed,
     flowerState.seed,
     flowerState.visible,
+    getCanaryCenterPosition,
     isDarkMode,
     isPageHidden,
     isReadingFilter,
     isReducedMotion,
+    requestAction,
   ]);
 
   useEffect(() => {
