@@ -9,9 +9,9 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 ## Vista rapida (Q3 2026 en progreso)
 
 - Estado general: mejoras de navegacion, internacionalizacion, descubrimiento de contenido, SEO, contenido en tiempo real y experiencia interactiva en curso.
-- Stack actual: Next.js 16, React 19, Sanity 5, ESLint 9.
-- Calidad tecnica: lint y build de produccion validados tras integrar filtros, internacionalizacion, SEO administrable, Sanity Live y Canary.
-- Riesgos abiertos: no se registran bloqueantes activos.
+- Stack actual: Next.js 16.3.5, React 19, Sanity 5, ESLint 9.
+- Calidad tecnica: instalacion reproducible, lint, cinco pruebas, build de produccion y 24 comprobaciones HTTP validados tras actualizar Next.js; navegacion y Studio revisados en navegador.
+- Riesgos abiertos: quedan 25 paquetes afectados en la auditoria local (13 altos, 11 moderados y uno bajo), un error de formularios reproducido tambien antes de la actualizacion y la verificacion de Sanity Live tras desplegar la correccion.
 
 ## 2026
 
@@ -40,6 +40,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Se agrego un selector de idioma compacto con icono animado que conserva la ruta, los slugs traducidos y los filtros activos.
 - Se valido la integracion de filtros, internacionalizacion, SEO y Canary con build de produccion usando Turbopack.
 - Se oculto la tabla de contenido vacia en posts y proyectos para aprovechar todo el ancho disponible.
+- Se actualizo Next.js a 16.3.5 para corregir vulnerabilidades, conservando las versiones de React y Sanity y sin vulnerabilidades criticas en la auditoria local posterior.
 
 #### Feature
 
@@ -84,6 +85,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Rotar el token de escritura de comentarios, revocar el token publico anterior y eliminar `NEXT_PUBLIC_SANITY_TOKEN`.
 - Eliminar el Deploy Hook `Sanity Deploy` para evitar builds completos en cada publicacion del CMS.
 - Preparar una migracion idempotente de contenido bilingue con respaldo, dry run y auditoria posterior.
+- Fijar `next` y `eslint-config-next` en 16.3.5 y actualizar el lockfile con sus dependencias compatibles, incluidos Sharp 0.35.4 y PostCSS 8.5.23.
 
 #### Fix
 
@@ -106,6 +108,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Corregir alternates automaticos, metadata de traduccion y detalles editoriales del contenido ingles.
 - Ocultar la tabla de contenido y su columna cuando no hay encabezados H2 o H3, permitiendo que el texto ocupe todo el ancho en posts y proyectos.
 - Evitar el renderizado del indice cuando la lista de encabezados esta vacia, es nula o no esta definida, conservando la jerarquia y los enlaces cuando hay titulos.
+- Corregir los avisos de seguridad de Next.js, incluido `GHSA-m99w-x7hq-7vfj`; Next.js, Sharp y PostCSS dejan de aparecer como paquetes afectados en la auditoria del lockfile. La correccion en produccion requiere desplegar esta actualizacion.
 
 #### Style
 
@@ -148,6 +151,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - [b49d694](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/b49d694) - feat: agregar busqueda y orientacion natural de Canary
 - [20de65b](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/20de65b) - feat: agregar lluvia y refugio floral para Canary
 - [d99223e](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/d99223e) - fix: ocultar tabla de contenido vacia
+- [a6af7e6](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/a6af7e6) - fix: actualizar Next.js para corregir vulnerabilidades
 
 ### Q2 (Abr-Jun) - Modernizacion y estabilidad
 
