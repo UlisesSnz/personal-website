@@ -86,7 +86,7 @@ const Navbar = ({ englishEnabled = false }) => {
 
                     <span
                         aria-hidden="true"
-                        className="h-5 w-px shrink-0 bg-dark/30 dark:bg-light/30"
+                        className="mx-3 h-5 w-px shrink-0 bg-dark/30 dark:bg-light/30"
                     />
 
                     {englishEnabled && (
@@ -139,7 +139,7 @@ const Navbar = ({ englishEnabled = false }) => {
 
                         <span
                             aria-hidden="true"
-                            className="h-5 w-px shrink-0 bg-light/40 dark:bg-dark/40"
+                            className="mx-3 h-5 w-px shrink-0 bg-light/40 dark:bg-dark/40 sm:mx-1"
                         />
 
                         {englishEnabled && (
