@@ -132,6 +132,17 @@
     "copyAria": "Copiar código",
     "imageAlt": "Imagen"
   },
+  "Video": {
+    "untitled": "Video",
+    "play": "Reproducir video: {title}",
+    "loading": "Cargando video…",
+    "unavailable": "Este video no está disponible.",
+    "playbackError": "No se pudo reproducir el video. Puedes intentar abrir el archivo con el enlace de abajo.",
+    "unsupported": "Tu navegador no admite este video. Usa el enlace para abrir el archivo.",
+    "openYouTube": "Ver en YouTube",
+    "openFile": "Abrir archivo de video",
+    "newTab": "se abre en una pestaña nueva"
+  },
   "Footer": {
     "rights": "Derechos Reservados.",
     "built": "Construido Con",

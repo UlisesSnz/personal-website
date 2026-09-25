@@ -132,6 +132,17 @@
     "copyAria": "Copy code",
     "imageAlt": "Image"
   },
+  "Video": {
+    "untitled": "Video",
+    "play": "Play video: {title}",
+    "loading": "Loading video…",
+    "unavailable": "This video is unavailable.",
+    "playbackError": "The video could not be played. You can try opening the file using the link below.",
+    "unsupported": "Your browser does not support this video. Use the link to open the file.",
+    "openYouTube": "Watch on YouTube",
+    "openFile": "Open video file",
+    "newTab": "opens in a new tab"
+  },
   "Footer": {
     "rights": "All rights reserved.",
     "built": "Built with",

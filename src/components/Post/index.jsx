@@ -99,7 +99,7 @@ const Post = ({
                                 <TableOfContent headings={headings} />
                             </div>
                         )}
-                        <div className={`font-medium ${hasHeadings ? 'col-span-8 lg:col-span-12 max-w-max' : 'col-span-12 w-full'}`}>
+                        <div className={`min-w-0 w-full font-medium ${hasHeadings ? 'col-span-8 lg:col-span-12' : 'col-span-12'}`}>
                             <PortableText value={description} components={PortableTextComponents} />
                         </div>
                     </div>

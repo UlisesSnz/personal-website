@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation';
 import { toPlainText } from 'next-sanity';
 import slugify from 'slugify';
 import PortableTextCodeBlock from './PortableTextCodeBlock';
+import PortableVideo from './PortableVideo';
 import siteMetadata from '@/utils/siteMetaData';
 
 const tableAlignmentClassMap = {
@@ -162,6 +163,7 @@ const PortableLink = ({ children, value }) => {
 
 const PortableTextComponents = {
   types: {
+    portableVideo: PortableVideo,
     portableTable: ({ value }) => renderTable({
       rows: value?.table?.rows,
       hasHeader: value?.hasHeader !== false,

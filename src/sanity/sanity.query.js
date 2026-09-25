@@ -68,6 +68,14 @@ const detailProjection = groq`{
   projectUrl,
   description[]{
     ...,
+    _type == "portableVideo" => {
+      file { asset->{_id, _type, url, mimeType, extension, size} },
+      poster { ..., "url": asset->url },
+      captions[]{
+        _key, language, label,
+        file { asset->{_id, _type, url, extension, size} }
+      }
+    },
     _type == "image" => {
       "image": asset->url,
       alt,

@@ -71,6 +71,9 @@ const project = defineType({
                     type: "portableTable",
                 },
                 {
+                    type: "portableVideo",
+                },
+                {
                     type: "code",
                     initialValue: {
                         language: "text",

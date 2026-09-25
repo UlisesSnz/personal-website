@@ -12,6 +12,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "i.ytimg.com",
+        pathname: "/vi/**",
+        search: "",
+      },
+      {
+        protocol: "https",
         hostname: "cdn.sanity.io",
         port: "",
       },
