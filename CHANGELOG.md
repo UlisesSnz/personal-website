@@ -8,9 +8,9 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 
 ## Vista rapida (Q3 2026 en progreso)
 
-- Estado general: mejoras de navegacion, internacionalizacion, descubrimiento de contenido, SEO, contenido en tiempo real y experiencia interactiva en curso.
+- Estado general: mejoras de navegacion, internacionalizacion, descubrimiento de contenido, SEO, contenido en tiempo real, videos editoriales y experiencia interactiva en curso.
 - Stack actual: Next.js 16.3.5, React 19, Sanity 5, ESLint 9.
-- Calidad tecnica: instalacion reproducible, lint, cinco pruebas, build de produccion y 24 comprobaciones HTTP validados tras actualizar Next.js; navegacion y Studio revisados en navegador.
+- Calidad tecnica: lint, 12 pruebas y build de produccion aprobados; esquema y dos borradores de Sanity validados sin errores. Videos revisados localmente en navegador, incluidos reproduccion, subtitulos, carga diferida, teclado, temas e idiomas. Las 24 comprobaciones HTTP corresponden a la actualizacion previa de Next.js; la revision de videos en produccion se realiza despues del despliegue.
 - Riesgos abiertos: quedan 25 paquetes afectados en la auditoria local (13 altos, 11 moderados y uno bajo), un error de formularios reproducido tambien antes de la actualizacion y la verificacion de Sanity Live tras desplegar la correccion.
 
 ## 2026
@@ -41,6 +41,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Se valido la integracion de filtros, internacionalizacion, SEO y Canary con build de produccion usando Turbopack.
 - Se oculto la tabla de contenido vacia en posts y proyectos para aprovechar todo el ancho disponible.
 - Se actualizo Next.js a 16.3.5 para corregir vulnerabilidades, conservando las versiones de React y Sanity y sin vulnerabilidades criticas en la auditoria local posterior.
+- Se agrego el bloque Video al Portable Text de articulos y proyectos, con archivos MP4 en Sanity o enlaces de YouTube, portada opcional y subtitulos WebVTT.
 
 #### Feature
 
@@ -77,6 +78,13 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Generar canonical, hreflang, Open Graph locale y sitemap bilingue sin alternates para contenido sin traduccion.
 - Controlar el lanzamiento del contenido ingles mediante la variable `ENGLISH_ENABLED`.
 - Reemplazar el selector `ES / EN` por un control circular de globo alineado con los iconos del encabezado.
+- Incorporar `portableVideo` al cuerpo editorial compartido, con titulo obligatorio, portada opcional, pie de hasta 180 caracteres y seleccion de origen sin migrar contenido existente.
+- Admitir MP4 de hasta 100.000.000 bytes mediante el uploader nativo de Sanity, con validacion posterior a la carga y antes de publicar. Los archivos requieren optimizacion previa, preferentemente H.264/AAC; no se incorpora conversion ni streaming adaptativo.
+- Admitir pistas WebVTT opcionales en espanol e ingles, con etiqueta y sin idiomas duplicados. No se generan portadas ni subtitulos automaticamente.
+- Validar enlaces normales, cortos, Shorts y embeds de YouTube con un parser compartido que comprueba el dominio y extrae el identificador; reproducir desde el principio sin importar HTML ni parametros del enlace.
+- Mostrar una miniatura optimizada con `next/image` y cargar el iframe de `youtube-nocookie.com` solo al activar el boton de reproduccion. Conservar enlaces directos accesibles para ambas fuentes.
+- Reproducir MP4 directamente desde Sanity con controles nativos, `playsInline`, `preload="none"` y `crossOrigin="anonymous"`, sin autoplay ni bucle, dentro de un marco adaptable 16:9 sin recortar el video.
+- Localizar mensajes y controles propios en espanol e ingles, limitar la interactividad al reproductor y ampliar solo la proyeccion GROQ de detalle, conservando Sanity Live, los listados y las portadas principales.
 
 #### Chore
 
@@ -86,6 +94,9 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Eliminar el Deploy Hook `Sanity Deploy` para evitar builds completos en cada publicacion del CMS.
 - Preparar una migracion idempotente de contenido bilingue con respaldo, dry run y auditoria posterior.
 - Fijar `next` y `eslint-config-next` en 16.3.5 y actualizar el lockfile con sus dependencias compatibles, incluidos Sharp 0.35.4 y PostCSS 8.5.23.
+- Agregar siete pruebas de `node:test` para URLs de YouTube, dominios enganosos, limite exacto de 100 MB, referencias ausentes, fuente activa y subtitulos; las 12 pruebas totales pasan junto con lint, build de produccion y `git diff --check`.
+- Validar videos con fixtures locales en movil y escritorio, temas claro y oscuro, espanol e ingles, con y sin portada, varios bloques y contenido existente. Comprobar reproduccion, pausa, avance, pantalla completa, subtitulos y errores de archivo; verificar ausencia de solicitudes MP4 e iframes de YouTube antes de reproducir.
+- Comprobar CORS y respuestas parciales HTTP 206 del CDN para MP4 y VTT desde localhost y el origen de produccion. Revisar insercion, edicion y cambio de fuente en Studio, y validar dos borradores temporales sin publicar contenido ficticio; estas verificaciones son previas al despliegue.
 
 #### Fix
 
@@ -109,6 +120,8 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - Ocultar la tabla de contenido y su columna cuando no hay encabezados H2 o H3, permitiendo que el texto ocupe todo el ancho en posts y proyectos.
 - Evitar el renderizado del indice cuando la lista de encabezados esta vacia, es nula o no esta definida, conservando la jerarquia y los enlaces cuando hay titulos.
 - Corregir los avisos de seguridad de Next.js, incluido `GHSA-m99w-x7hq-7vfj`; Next.js, Sharp y PostCSS dejan de aparecer como paquetes afectados en la auditoria del lockfile. La correccion en produccion requiere desplegar esta actualizacion.
+- Validar solo la fuente seleccionada del bloque Video, evitando que un enlace de YouTube incompleto y oculto impida publicar un archivo MP4; conservar los datos al alternar origen.
+- Permitir que los videos ocupen el ancho disponible de la columna editorial cuando hay tabla de contenido, incluso en posts con poco texto.
 
 #### Style
 
@@ -152,6 +165,7 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 - [20de65b](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/20de65b) - feat: agregar lluvia y refugio floral para Canary
 - [d99223e](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/d99223e) - fix: ocultar tabla de contenido vacia
 - [a6af7e6](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/a6af7e6) - fix: actualizar Next.js para corregir vulnerabilidades
+- [101dcc9](https://github.com/UlisesSnz/portafolio-nextjs-v2/commit/101dcc9) - feat: agregar videos en Portable Text
 
 ### Q2 (Abr-Jun) - Modernizacion y estabilidad
 
