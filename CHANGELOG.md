@@ -6,14 +6,26 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 
 - Sin cambios pendientes.
 
-## Vista rapida (Q3 2026 en progreso)
+## Vista rapida (registro de Q3 2026)
 
 - Estado general: mejoras de navegacion, internacionalizacion, descubrimiento de contenido, SEO, contenido en tiempo real, videos editoriales y experiencia interactiva en curso.
-- Stack actual: Next.js 16.3.5, React 19, Sanity 5, ESLint 9.
+- Stack registrado: Next.js 16.3.5, React 19, Sanity 5, ESLint 9.
 - Calidad tecnica: lint, 12 pruebas y build de produccion aprobados; esquema y dos borradores de Sanity validados sin errores. Videos revisados localmente en navegador, incluidos reproduccion, subtitulos, carga diferida, teclado, temas e idiomas. Las 24 comprobaciones HTTP corresponden a la actualizacion previa de Next.js; la revision de videos en produccion se realiza despues del despliegue.
-- Riesgos abiertos: quedan 25 paquetes afectados en la auditoria local (13 altos, 11 moderados y uno bajo), un error de formularios reproducido tambien antes de la actualizacion y la verificacion de Sanity Live tras desplegar la correccion.
+- Riesgos registrados: 25 paquetes afectados en la auditoria local (13 altos, 11 moderados y uno bajo), un error de formularios reproducido tambien antes de la actualizacion y la verificacion de Sanity Live tras desplegar la correccion.
 
 ## 2026
+
+### Q4 (Oct-Dic) - Previsualizacion protegida de borradores
+
+#### 5 de octubre
+
+- Se integro Sanity Presentation con Next.js Draft Mode y ubicaciones localizadas para perfil, paginas SEO, articulos, proyectos y categorias.
+- Se limito la activacion a secretos temporales de Studio y rutas internas; el token Viewer permanece en el servidor y el acceso compartido a borradores sigue desactivado.
+- Se separaron las consultas de borradores de sitemap, parametros estaticos y contenido publico, conservando el cache publico y la generacion estatica de las rutas publicadas.
+- Se habilitaron stega, clic para editar y actualizacion de cambios guardados en preview, con indicador visible, salida, `noindex` y respuestas privadas sin cache publico.
+- Se agregaron estados seguros para borradores incompletos y se ocultaron comentarios y enlaces para compartir durante la previsualizacion.
+- Se verificaron lint, build, rutas seguras, aislamiento entre sesiones y navegacion por slugs traducidos. Quedan por comprobar en navegador documentos nuevos que solo existan como borrador y el bloqueo publico de `/en` en un despliegue con `ENGLISH_ENABLED=false`.
+- El proyecto Vercel usa Node.js 24 para sus nuevos despliegues. Stack de esta entrega: Next.js 16.3.6, React 19 y Sanity 5.
 
 ### Q3 (Jul-Sep) - Navegacion, internacionalizacion, descubrimiento de contenido, SEO y experiencia interactiva
 
