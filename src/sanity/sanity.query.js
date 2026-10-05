@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { groq } from 'next-sanity';
+import { draftMode } from 'next/headers';
 import { sanityFetch } from './lib/live';
 import { getSeoDocumentId } from './seoPages';
 
@@ -107,6 +108,22 @@ async function fetchPublished(query, params = {}) {
   return data;
 }
 
+async function fetchPageContent(query, params = {}, { stega = true } = {}) {
+  const preview = (await draftMode()).isEnabled;
+  if (preview && !process.env.SANITY_API_READ_TOKEN) {
+    throw new Error('Preview habilitado sin SANITY_API_READ_TOKEN.');
+  }
+
+  const { data } = await sanityFetch({
+    query,
+    params,
+    perspective: preview ? 'drafts' : 'published',
+    stega: preview && stega,
+  });
+
+  return data;
+}
+
 const PAGE_SEO_QUERY = groq`{
   "title": coalesce(
     *[_id == $pageId][0].seo.title,
@@ -123,15 +140,15 @@ const PAGE_SEO_QUERY = groq`{
 }`;
 
 export async function getPageSeo(pageKey, locale) {
-  return fetchPublished(PAGE_SEO_QUERY, {
+  return fetchPageContent(PAGE_SEO_QUERY, {
     pageId: getSeoDocumentId(pageKey, locale),
     defaultId: getSeoDocumentId('default', locale),
-  });
+  }, { stega: false });
 }
 
 export async function getDefaultSeo(locale) {
   const defaultId = getSeoDocumentId('default', locale);
-  return fetchPublished(PAGE_SEO_QUERY, { pageId: defaultId, defaultId });
+  return fetchPageContent(PAGE_SEO_QUERY, { pageId: defaultId, defaultId }, { stega: false });
 }
 
 export async function getPublishedContentVersion(locale) {
@@ -163,7 +180,7 @@ export async function getPublishedContentVersion(locale) {
 }
 
 export async function getCategorySeo(slug, locale) {
-  return fetchPublished(
+  return fetchPageContent(
     groq`{
       "title": coalesce(
         *[_type == "category" && ${localizedFilter} && slug.current == $slug][0].seo.title,
@@ -185,12 +202,13 @@ export async function getCategorySeo(slug, locale) {
       locale,
       categoriesId: getSeoDocumentId('categories', locale),
       defaultId: getSeoDocumentId('default', locale),
-    }
+    },
+    { stega: false }
   );
 }
 
 export async function getProfile(locale) {
-  return fetchPublished(
+  return fetchPageContent(
     groq`*[_type == "profile" && ${localizedFilter}][0]{
       _id,
       fullName,
@@ -212,7 +230,7 @@ export async function getProfile(locale) {
 }
 
 export async function getJob(locale) {
-  return fetchPublished(
+  return fetchPageContent(
     groq`*[_type == "job" && ${localizedFilter}] | order(years.startYear desc){
       _id,
       name,
@@ -227,7 +245,7 @@ export async function getJob(locale) {
 }
 
 export async function getEducation(locale) {
-  return fetchPublished(
+  return fetchPageContent(
     groq`*[_type == "education" && ${localizedFilter}] | order(years.startYear desc){
       _id,
       name,
@@ -241,14 +259,14 @@ export async function getEducation(locale) {
 }
 
 export async function getProjects(locale) {
-  return fetchPublished(
-    groq`*[_type == "project" && ${localizedFilter}] | order(date desc) ${cardProjection}`,
+  return fetchPageContent(
+    groq`*[_type == "project" && ${localizedFilter} && defined(slug.current)] | order(date desc) ${cardProjection}`,
     { locale }
   );
 }
 
-async function getLocalizedDetail(type, slug, locale) {
-  const result = await fetchPublished(
+async function getLocalizedDetail(type, slug, locale, options) {
+  const result = await fetchPageContent(
     groq`{
       "direct": *[
         _type == $type && ${localizedFilter} && slug.current == $slug
@@ -259,7 +277,8 @@ async function getLocalizedDetail(type, slug, locale) {
       ][0].translations[language == $locale][0].value-> ${detailProjection},
       "sourceExists": count(*[_type == $type && slug.current == $slug]) > 0
     }`,
-    { type, slug, locale }
+    { type, slug, locale },
+    options
   );
 
   return {
@@ -268,19 +287,19 @@ async function getLocalizedDetail(type, slug, locale) {
   };
 }
 
-export function getSingleProject(slug, locale) {
-  return getLocalizedDetail('project', slug, locale);
+export function getSingleProject(slug, locale, options) {
+  return getLocalizedDetail('project', slug, locale, options);
 }
 
 export async function getCategories(locale) {
-  return fetchPublished(
-    groq`*[_type == "category" && ${localizedFilter}] | order(name asc) ${categoryProjection}`,
+  return fetchPageContent(
+    groq`*[_type == "category" && ${localizedFilter} && defined(slug.current)] | order(name asc) ${categoryProjection}`,
     { locale }
   );
 }
 
-export async function getCategoryBySlug(slug, locale) {
-  const result = await fetchPublished(
+export async function getCategoryBySlug(slug, locale, options) {
+  const result = await fetchPageContent(
     groq`{
       "direct": *[
         _type == "category" && ${localizedFilter} && slug.current == $slug
@@ -291,7 +310,8 @@ export async function getCategoryBySlug(slug, locale) {
       ][0].translations[language == $locale][0].value-> ${categoryDetailProjection},
       "sourceExists": count(*[_type == "category" && slug.current == $slug]) > 0
     }`,
-    { slug, locale }
+    { slug, locale },
+    options
   );
 
   return {
@@ -301,10 +321,11 @@ export async function getCategoryBySlug(slug, locale) {
 }
 
 export async function getPostsBySlug(slug, locale) {
-  return fetchPublished(
+  return fetchPageContent(
     groq`*[
       _type in ["project", "article"] &&
       ${localizedFilter} &&
+      defined(slug.current) &&
       $slug in categories[]->slug.current
     ] | order(date desc) {
       ${cardFields},
@@ -318,20 +339,20 @@ export async function getPostsBySlug(slug, locale) {
 }
 
 export async function getArticles(locale) {
-  return fetchPublished(
-    groq`*[_type == "article" && ${localizedFilter}] | order(date desc) ${cardProjection}`,
+  return fetchPageContent(
+    groq`*[_type == "article" && ${localizedFilter} && defined(slug.current)] | order(date desc) ${cardProjection}`,
     { locale }
   );
 }
 
-export function getSingleArticle(slug, locale) {
-  return getLocalizedDetail('article', slug, locale);
+export function getSingleArticle(slug, locale, options) {
+  return getLocalizedDetail('article', slug, locale, options);
 }
 
 export async function getRecentPosts(locale) {
-  return fetchPublished(
+  return fetchPageContent(
     groq`*[
-      _type in ["project", "article"] && ${localizedFilter}
+      _type in ["project", "article"] && ${localizedFilter} && defined(slug.current)
     ] | order(date desc) [0..4] {
       ${cardFields},
       "slug": "/" + select(

@@ -6,6 +6,7 @@ import slugify from 'slugify';
 import PortableTextCodeBlock from './PortableTextCodeBlock';
 import PortableVideo from './PortableVideo';
 import siteMetadata from '@/utils/siteMetaData';
+import { stegaClean } from 'next-sanity';
 
 const tableAlignmentClassMap = {
   left: 'text-left',
@@ -127,7 +128,7 @@ const PortableImage = ({ value }) => {
 };
 
 const PortableLink = ({ children, value }) => {
-  const href = value?.href || '#';
+  const href = stegaClean(value?.href || '#');
   let internalHref = href.startsWith('/') ? href : null;
 
   if (href.startsWith('http')) {
@@ -177,7 +178,7 @@ const PortableTextComponents = {
 
   block: {
     h2: ({ children, value }) => {
-      const slug = slugify(toPlainText(value), { lower: true });
+      const slug = slugify(stegaClean(toPlainText(value)), { lower: true });
       return (
         <h2 id={slug} className="mt-14 mb-6 scroll-mt-4 font-bold text-4xl sm:mt-10 sm:mb-5 sm:text-2xl xs:text-xl first:mt-0">
           {children}
@@ -185,7 +186,7 @@ const PortableTextComponents = {
       );
     },
     h3: ({ children, value }) => {
-      const slug = slugify(toPlainText(value), { lower: true });
+      const slug = slugify(stegaClean(toPlainText(value)), { lower: true });
       return (
         <h3 id={slug} className="mt-10 mb-4 scroll-mt-4 font-bold text-2xl sm:mt-8 sm:mb-3 sm:text-xl xs:text-lg first:mt-0">
           {children}

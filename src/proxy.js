@@ -12,6 +12,7 @@ const pathnameHasLocale = (pathname) =>
 
 export function proxy(request) {
   const { pathname } = request.nextUrl;
+  const previewCookiePresent = Boolean(request.cookies.get('__prerender_bypass')?.value);
 
   if (!pathnameHasLocale(pathname)) {
     const redirectUrl = request.nextUrl.clone();
@@ -21,14 +22,20 @@ export function proxy(request) {
 
   if (
     process.env.ENGLISH_ENABLED !== 'true' &&
-    (pathname === '/en' || pathname.startsWith('/en/'))
+    (pathname === '/en' || pathname.startsWith('/en/')) &&
+    !previewCookiePresent
   ) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = `/es${pathname.slice(3)}`;
     return NextResponse.redirect(redirectUrl, 307);
   }
 
-  return handleI18nRouting(request);
+  const response = handleI18nRouting(request);
+  if (previewCookiePresent) {
+    response.headers.set('Cache-Control', 'private, no-store');
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+  return response;
 }
 
 export const config = {

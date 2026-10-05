@@ -103,8 +103,8 @@ export async function getStaticPageMetadata(pageKey, locale) {
 
   try {
     seo = await getPageSeo(pageKey, locale);
-  } catch (error) {
-    console.error(`No fue posible cargar el SEO de ${pageKey}.`, error);
+  } catch {
+    console.error(`No fue posible cargar el SEO de ${pageKey}.`);
   }
 
   return buildMetadata({

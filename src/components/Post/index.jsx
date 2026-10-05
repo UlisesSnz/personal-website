@@ -13,6 +13,7 @@ import SharePostLinks from './SharePostLinks';
 import fallBackImage from '../../../public/images/profile/developer.png';
 
 const Post = ({
+        isPreview = false,
         postId,
         contentType,
         title,
@@ -24,7 +25,6 @@ const Post = ({
         projectUrl,
         categories,
         slug,
-        commentsOrder,
         date,
         shareUrl
     }) => {
@@ -54,22 +54,22 @@ const Post = ({
                         <span className="text-md font-medium mx-8 text-placeholder text-dark/75 dark:text-light/75 sm:mx-4 sm:text-sm sm:mb-2">
                             {t('Post.readingTime', { minutes: estimatedReadingTime })}
                         </span>
-                        <span className="text-md font-medium text-placeholder text-dark/75 dark:text-light/75 sm:text-sm sm:mb-2">
+                        {date && <span className="text-md font-medium text-placeholder text-dark/75 dark:text-light/75 sm:text-sm sm:mb-2">
                             {t('Post.updated', {
                                 date: format.dateTime(new Date(`${date}T00:00:00Z`), 'contentDate'),
                             })}
-                        </span>
-                        <SharePostLinks
+                        </span>}
+                        {!isPreview && <SharePostLinks
                             title={title}
                             shareUrl={shareUrl}
                             triggerClassName="ml-6 sm:ml-2 sm:mb-2"
-                        />
+                        />}
                     </div>
                     <div className="text-md mt-6 mb-8 w-full text-center font-medium capitalize text-placeholder text-dark/75 dark:text-light/75 sm:mt-4 sm:mb-6 sm:text-sm sm:leading-snug">
                         {categories && categories.length > 0 && (
                             <span className="flex flex-wrap justify-center gap-2">
                                 {t('Post.categories')}
-                                {categories.map(category => (
+                                {categories.filter((category) => category?.slug).map(category => (
                                     <Link
                                         key={category.slug}
                                         href={`/search/${category.slug}`}
@@ -125,7 +125,7 @@ const Post = ({
                             </div>
                         </div>
                     )}
-                    <Comments postId={postId} contentType={contentType} title={title} slug={slug} commentsOrder={commentsOrder} />
+                        {!isPreview && <Comments postId={postId} contentType={contentType} title={title} slug={slug} />}
                 </Layout>
             </article>
             <Toaster theme='system' duration={3000} />

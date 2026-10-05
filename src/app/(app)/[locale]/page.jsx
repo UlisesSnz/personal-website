@@ -35,15 +35,15 @@ export default async function Home({ params }) {
                         />
                     </div>
                         <div className="w-1/2 flex flex-col items-center self-center lg:w-full lg:text-center">
-                            <AnimatedText text={profile.headline} className="!text-6xl !text-left
+                            <AnimatedText text={profile.headline || (locale === 'en' ? 'Draft profile' : 'Perfil en borrador')} className="!text-6xl !text-left
                             xl:!text-5xl lg:!text-center lg:!text-6xl md:!text-5xl sm:!text-3xl"
                             />
                             <p className="my-4 text-base font-medium md:text-sm sm:text-xs">
                                 {profile.shortBiography}
                             </p>
                             <div className="flex items-center self-start mt-2 lg:self-center">
-                                <a
-                                    href={`${profile.resumeURL}?dl=${profile.fullName} - Resume.pdf`}
+                                {profile.resumeURL && <a
+                                    href={`${profile.resumeURL}?dl=${encodeURIComponent(profile.fullName || 'Resume')} - Resume.pdf`}
                                     aria-label={t('downloadResume')}
                                     className="flex items-center bg-dark text-light p-2.5 px-6 rounded-lg text-lg
                                     font-semibold hover:bg-light hover:text-dark border-2 border-solid border-transparent hover:border-dark
@@ -51,7 +51,7 @@ export default async function Home({ params }) {
                                     md:p-2 md:px-4 md:text-base"
                                 >
                                     {t('resume')} <LinkArrow className={"h-auto ml-1 !w-6 md:!w-4"} />
-                                </a>
+                                </a>}
                                 <Link
                                     href="/contact"
                                     className="ml-4 text-lg font-medium capitalize text-dark underline dark:text-light md:text-base hidden lg:flex"

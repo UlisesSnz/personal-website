@@ -3,12 +3,14 @@ import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 import { GithubIcon } from '../Shared/Icons';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import fallbackImage from '../../../public/images/profile/developer.png';
 
 const FramerImage = motion(Image);
 
 const PostCard = ({title, summary, categories, img, link, github }) => {
     const t = useTranslations('Post');
+    const locale = useLocale();
     return(
       <article
         className="w-full flex flex-col items-center justify-center rounded-2xl
@@ -20,7 +22,7 @@ const PostCard = ({title, summary, categories, img, link, github }) => {
         />
         
         <Link href={link} className="w-full cursor-pointer overflow-hidden rounded-lg">
-          <FramerImage src={img.image} width={img.imageWidth} height={img.imageHeight} alt={title} className="w-full h-auto"
+          <FramerImage src={img?.image || fallbackImage} width={img?.imageWidth || 1200} height={img?.imageHeight || 675} alt={title || ''} className="w-full h-auto"
             whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}
           />
         </Link>
@@ -28,7 +30,7 @@ const PostCard = ({title, summary, categories, img, link, github }) => {
         <div className="w-full flex flex-col items-start justify-between mt-4">
           <div className="flex flex-wrap gap-x-2 gap-y-0 mb-2">
             {categories &&
-              categories.map(categy => (
+              categories.filter((category) => category?.slug).map(categy => (
                 <Link
                   key={categy.slug}
                   href={`/search/${categy.slug}`}
@@ -41,7 +43,7 @@ const PostCard = ({title, summary, categories, img, link, github }) => {
             }
           </div>
           <Link href={link} className="hover:underline underline-offset-2">
-            <h2 className="my-2 w-full text-left text-3xl font-bold lg:text-2xl">{title}</h2>
+            <h2 className="my-2 w-full text-left text-3xl font-bold lg:text-2xl">{title || (locale === 'en' ? 'Untitled draft' : 'Borrador sin título')}</h2>
           </Link>
           <p className="my-2 font-medium text-dark dark:text-light sm:text-sm">{summary}</p>
           <div className="w-full mt-2 flex items-center justify-between">

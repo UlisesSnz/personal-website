@@ -3,9 +3,12 @@ import { useState, useEffect, useRef } from 'react';
 import { getComments, getCommentsListen } from '@/sanity/comments.query';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import { useSearchParams } from 'next/navigation';
 
-const ShowComments = ({ postId, contentType, slug, commentsOrder }) => {
+const ShowComments = ({ postId, contentType, slug }) => {
     const t = useTranslations('Comments');
+    const requestedOrder = useSearchParams().get('comments');
+    const commentsOrder = requestedOrder === 'asc' ? 'asc' : 'desc';
     const format = useFormatter();
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);

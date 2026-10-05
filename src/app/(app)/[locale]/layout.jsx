@@ -3,6 +3,8 @@ import { Montserrat } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
+import { draftMode } from 'next/headers';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import siteMetadata from '@/utils/siteMetaData';
@@ -17,6 +19,7 @@ import { routing } from '@/i18n/routing';
 import { getLocaleDefinition } from '@/i18n/config';
 import { isEnglishEnabled } from '@/i18n/runtime';
 import { LocalePathProvider } from '@/components/Navbar/LocalePathContext';
+import PreviewControls from '@/components/Preview/PreviewControls';
 
 const montserrat = Montserrat({
     subsets: ["latin"],
@@ -24,18 +27,21 @@ const montserrat = Montserrat({
 });
 
 export function generateStaticParams() {
-    return routing.locales.map((locale) => ({ locale }));
+    return routing.locales
+        .filter((locale) => locale !== 'en' || isEnglishEnabled())
+        .map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({ params }) {
     const { locale } = await params;
+    const isPreview = (await draftMode()).isEnabled;
     const t = await getTranslations({ locale, namespace: 'Metadata' });
     let seo;
 
     try {
         seo = await getDefaultSeo(locale);
-    } catch (error) {
-        console.error('No fue posible cargar el SEO predeterminado.', error);
+    } catch {
+        console.error('No fue posible cargar el SEO predeterminado.');
     }
 
     const brandTitle = seo?.title || siteMetadata.title;
@@ -55,18 +61,20 @@ export async function generateMetadata({ params }) {
             template: `%s | ${brandTitle}`,
             default: brandTitle,
         },
-        robots: {
-            index: true,
-            follow: true,
-            googleBot: {
+        robots: isPreview
+            ? { index: false, follow: false, googleBot: { index: false, follow: false } }
+            : {
                 index: true,
                 follow: true,
-                noimageindex: true,
-                "max-video-preview": -1,
-                "max-image-preview": "large",
-                "max-snippet": -1,
+                googleBot: {
+                    index: true,
+                    follow: true,
+                    noimageindex: true,
+                    "max-video-preview": -1,
+                    "max-image-preview": "large",
+                    "max-snippet": -1,
+                },
             },
-        },
     };
 }
 
@@ -77,12 +85,15 @@ export default async function RootLayout({ children, params }) {
         notFound();
     }
 
+    const isPreview = (await draftMode()).isEnabled;
+    if (locale === 'en' && !isEnglishEnabled() && !isPreview) redirect('/es');
+
     setRequestLocale(locale);
     const messages = await getMessages();
     const localeDefinition = getLocaleDefinition(locale);
     const englishEnabled = isEnglishEnabled();
     const isProduction = process.env.VERCEL_ENV === 'production';
-    const contentVersion = isProduction
+    const contentVersion = isProduction && !isPreview
         ? await getPublishedContentVersion(locale)
         : undefined;
 
@@ -100,14 +111,15 @@ export default async function RootLayout({ children, params }) {
                 </Script>
                 <NextIntlClientProvider messages={messages}>
                     <LocalePathProvider>
-                        <Navbar englishEnabled={englishEnabled} />
+                        <Navbar englishEnabled={englishEnabled || isPreview} />
+                        {isPreview && <PreviewControls />}
                         {children}
                         <Footer />
                     </LocalePathProvider>
                 </NextIntlClientProvider>
                 <div id='modal' />
                 <Analytics />
-                {isProduction ? (
+                {isPreview ? null : isProduction ? (
                     <>
                         <SanityLive
                             includeDrafts={false}

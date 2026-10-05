@@ -1,3 +1,5 @@
+import { stegaClean } from 'next-sanity';
+
 export const DEFAULT_CONTENT_SORT = "date-desc";
 
 export const CONTENT_SORT_OPTIONS = [
@@ -36,7 +38,7 @@ export function sortContentItems(items, sort = DEFAULT_CONTENT_SORT, locale = "e
 }
 
 function compareNames(itemA, itemB, collator) {
-  return collator.compare(itemA?.name || "", itemB?.name || "");
+  return collator.compare(stegaClean(itemA?.name || ""), stegaClean(itemB?.name || ""));
 }
 
 function compareDates(itemA, itemB, direction) {

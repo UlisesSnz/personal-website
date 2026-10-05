@@ -1,8 +1,9 @@
 import AddComment from "./AddComment";
 import ShowComments from "./ShowComments";
 import { useTranslations } from 'next-intl';
+import { Suspense } from 'react';
 
-const Comments = ({ postId, contentType, title, slug, commentsOrder }) => {
+const Comments = ({ postId, contentType, title, slug }) => {
     const t = useTranslations('Comments');
     return (
         <div className="my-64 md:my-32">
@@ -15,7 +16,9 @@ const Comments = ({ postId, contentType, title, slug, commentsOrder }) => {
                 contentType={contentType}
                 slug={slug}
             />
-            <ShowComments postId={postId} contentType={contentType} slug={slug} commentsOrder={commentsOrder} />
+            <Suspense fallback={null}>
+                <ShowComments postId={postId} contentType={contentType} slug={slug} />
+            </Suspense>
         </div>
     )
 }

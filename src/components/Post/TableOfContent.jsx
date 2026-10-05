@@ -1,5 +1,6 @@
 import slugify from 'slugify';
 import { useTranslations } from 'next-intl';
+import { stegaClean } from 'next-sanity';
 
 const nestHeadings = (blocks) => {
     const treeNodes = [];
@@ -10,7 +11,7 @@ const nestHeadings = (blocks) => {
 
         const level = parseInt(block.style.replace('h', ''), 10);
 
-        const text = block.children.map(child => child.text || '').join(' ') || 'Intitulado';
+        const text = block.children.map(child => stegaClean(child.text || '')).join(' ') || 'Intitulado';
 
         const treeNode = {
             slug: slugify(text, { lower:true }),

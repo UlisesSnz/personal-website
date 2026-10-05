@@ -9,6 +9,7 @@ import {codeInput} from '@sanity/code-input'
 import {table} from '@sanity/table'
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
+import {presentationTool} from 'sanity/presentation'
 import {documentInternationalization} from '@sanity/document-internationalization'
 
 // Go to https://www.sanity.io/docs/api-versioning to learn how API versioning works
@@ -16,6 +17,7 @@ import {apiVersion, dataset, projectId} from './src/sanity/env'
 import {schema} from './src/sanity/schemaTypes'
 import {structure} from './src/sanity/structure'
 import {LOCALE_DEFINITIONS, TRANSLATED_SCHEMA_TYPES} from './src/i18n/config'
+import {resolve} from './src/sanity/presentation'
 
 export default defineConfig({
   basePath: '/studio',
@@ -61,6 +63,13 @@ export default defineConfig({
       apiVersion,
     }),
     structureTool({structure}),
+    presentationTool({
+      resolve,
+      previewUrl: {
+        initial: '/es',
+        previewMode: {enable: '/api/draft-mode/enable', shareAccess: false},
+      },
+    }),
     codeInput(),
     table(),
     // Vision is for querying with GROQ from inside the Studio

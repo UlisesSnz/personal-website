@@ -6,12 +6,12 @@ import siteMetadata from '@/utils/siteMetaData';
 import { buildMetadata, buildTranslatedPathnames } from '@/utils/seoMetadata';
 import { permanentRedirect, redirect } from '@/i18n/navigation';
 import { LocalePathRegistration } from '@/components/Navbar/LocalePathContext';
-
-export const dynamic = 'force-static';
+import { draftMode } from 'next/headers';
+import { isEnglishEnabled } from '@/i18n/runtime';
 
 export async function generateStaticParams() {
   const entries = await Promise.all(
-    ['es', 'en'].map(async (locale) => {
+    (isEnglishEnabled() ? ['es', 'en'] : ['es']).map(async (locale) => {
       const articles = await getArticleSlugs(locale);
       return articles.map(({ slug }) => ({ locale, article: slug }));
     })
@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { locale, article: slug } = await params;
-  const { content: article } = await getSingleArticle(slug, locale);
+  const { content: article } = await getSingleArticle(slug, locale, { stega: false });
 
   if (!article) return {};
 
@@ -37,13 +37,11 @@ export async function generateMetadata({ params }) {
   });
 }
 
-export default async function ArticlePage({ params, searchParams }) {
-  const [{ locale, article: slug }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+export default async function ArticlePage({ params }) {
+  const { locale, article: slug } = await params;
   setRequestLocale(locale);
-  const commentsOrder = ['asc', 'desc'].includes(resolvedSearchParams.comments)
-    ? resolvedSearchParams.comments
-    : 'desc';
   const { content: article, sourceExists } = await getSingleArticle(slug, locale);
+  const isPreview = (await draftMode()).isEnabled;
 
   if (!article) {
     if (sourceExists) redirect({ href: '/blog', locale });
@@ -66,17 +64,17 @@ export default async function ArticlePage({ params, searchParams }) {
     <>
       <LocalePathRegistration pathnames={alternatePathnames} />
       <Post
+        isPreview={isPreview}
         postId={article._id}
         contentType="article"
-        title={article.name}
+        title={article.name || (locale === 'en' ? 'Untitled draft' : 'Borrador sin título')}
         estimatedReadingTime={article.estimatedReadingTime}
         coverImage={article.coverImage}
         headings={article.headings}
-        description={article.description}
+        description={article.description || []}
         categories={article.categories}
         slug={article.slug}
         date={article.date}
-        commentsOrder={commentsOrder}
         shareUrl={shareUrl}
       />
     </>

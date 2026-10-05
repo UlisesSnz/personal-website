@@ -6,12 +6,12 @@ import siteMetadata from '@/utils/siteMetaData';
 import { buildMetadata, buildTranslatedPathnames } from '@/utils/seoMetadata';
 import { permanentRedirect, redirect } from '@/i18n/navigation';
 import { LocalePathRegistration } from '@/components/Navbar/LocalePathContext';
-
-export const dynamic = 'force-static';
+import { draftMode } from 'next/headers';
+import { isEnglishEnabled } from '@/i18n/runtime';
 
 export async function generateStaticParams() {
   const entries = await Promise.all(
-    ['es', 'en'].map(async (locale) => {
+    (isEnglishEnabled() ? ['es', 'en'] : ['es']).map(async (locale) => {
       const projects = await getProjectSlugs(locale);
       return projects.map(({ slug }) => ({ locale, project: slug }));
     })
@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { locale, project: slug } = await params;
-  const { content: project } = await getSingleProject(slug, locale);
+  const { content: project } = await getSingleProject(slug, locale, { stega: false });
 
   if (!project) return {};
 
@@ -36,13 +36,11 @@ export async function generateMetadata({ params }) {
   });
 }
 
-export default async function ProjectPage({ params, searchParams }) {
-  const [{ locale, project: slug }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+export default async function ProjectPage({ params }) {
+  const { locale, project: slug } = await params;
   setRequestLocale(locale);
-  const commentsOrder = ['asc', 'desc'].includes(resolvedSearchParams.comments)
-    ? resolvedSearchParams.comments
-    : 'desc';
   const { content: project, sourceExists } = await getSingleProject(slug, locale);
+  const isPreview = (await draftMode()).isEnabled;
 
   if (!project) {
     if (sourceExists) redirect({ href: '/projects', locale });
@@ -65,19 +63,19 @@ export default async function ProjectPage({ params, searchParams }) {
     <>
       <LocalePathRegistration pathnames={alternatePathnames} />
       <Post
+        isPreview={isPreview}
         postId={project._id}
         contentType="project"
-        title={project.name}
+        title={project.name || (locale === 'en' ? 'Untitled draft' : 'Borrador sin título')}
         estimatedReadingTime={project.estimatedReadingTime}
         coverImage={project.coverImage}
         headings={project.headings}
-        description={project.description}
+        description={project.description || []}
         githubUrl={project.githubUrl}
         projectUrl={project.projectUrl}
         categories={project.categories}
         slug={project.slug}
         date={project.date}
-        commentsOrder={commentsOrder}
         shareUrl={shareUrl}
       />
     </>

@@ -22,7 +22,7 @@ import { LocalePathRegistration } from '@/components/Navbar/LocalePathContext';
 
 export async function generateMetadata({ params }) {
   const { locale, posts: requestedSlug } = await params;
-  const { content: category } = await getCategoryBySlug(requestedSlug, locale);
+  const { content: category } = await getCategoryBySlug(requestedSlug, locale, { stega: false });
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   if (!category) return {};
@@ -30,8 +30,8 @@ export async function generateMetadata({ params }) {
   let seo;
   try {
     seo = await getCategorySeo(category.slug, locale);
-  } catch (error) {
-    console.error(`No fue posible cargar el SEO de la categoría ${category.slug}.`, error);
+  } catch {
+    console.error(`No fue posible cargar el SEO de la categoría ${category.slug}.`);
   }
 
   return buildMetadata({

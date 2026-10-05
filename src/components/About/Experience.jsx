@@ -63,9 +63,9 @@ const Experience = ({ job }) => {
               company={data.name}
               companyLink={data.url}
               time={
-                data.years.endYear
+                data.years?.endYear
                   ? `${data.years.startYear}-${data.years.endYear}`
-                  : `${data.years.startYear}-${t('present')}`
+                  : data.years?.startYear ? `${data.years.startYear}-${t('present')}` : ''
               }
               address={data.location}
               work={data.description}

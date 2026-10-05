@@ -20,7 +20,7 @@ const ListCard = ({ title, date, img, link }) => {
           img={img}
           link={link}
         />
-        <span className="text-primary font-semibold pl-4 dark:text-primaryDark sm:self-start sm:pl-0 xs:text-sm">{format.dateTime(new Date(`${date}T00:00:00Z`), 'contentDate')}</span>
+        {date && <span className="text-primary font-semibold pl-4 dark:text-primaryDark sm:self-start sm:pl-0 xs:text-sm">{format.dateTime(new Date(`${date}T00:00:00Z`), 'contentDate')}</span>}
       </motion.li>
     )
 }

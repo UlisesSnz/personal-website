@@ -11,6 +11,7 @@ import PortableTextComponents from '@/components/Shared/PortableTextComponents '
 import { getStaticPageMetadata } from '@/utils/seoMetadata';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import fallbackImage from '../../../../../public/images/profile/developer.png';
 
 export async function generateMetadata({ params }) {
     const { locale } = await params;
@@ -38,7 +39,7 @@ const about = async ({ params }) => {
                             <div className="col-span-3 flex flex-col items-start justify-start xl:col-span-4 md:order-2 md:col-span-8">
                                 <h2 className="mb-4 text-lg font-bold uppercase text-dark/75 dark:text-light/75">{t('biography')}</h2>
                                 <div className="font-medium">
-                                    <PortableText value={profile.fullBiography} components={PortableTextComponents} />
+                                    <PortableText value={profile.fullBiography || []} components={PortableTextComponents} />
                                 </div>
                             </div>
 
@@ -48,20 +49,20 @@ const about = async ({ params }) => {
                             >
                                 <div className="absolute top-0 -right-3 -z-10 w-[102%] h-[103%] rounded-[2rem] rounded-br-3xl bg-dark dark:bg-light" />
                                 <Image
-                                    src={profile.profileImage.image}
-                                    alt={profile.profileImage.alt}
+                                    src={profile.profileImage?.image || fallbackImage}
+                                    alt={profile.profileImage?.alt || profile.fullName || ''}
                                     className="w-full h-auto rounded-2xl"
                                     priority
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    width={profile.profileImage.imageWidth}
-                                    height={profile.profileImage.imageHeight}
+                                    width={profile.profileImage?.imageWidth || 1200}
+                                    height={profile.profileImage?.imageHeight || 675}
                                 />
                             </div>
 
                             <div className="col-span-2 flex flex-col items-end justify-between xl:col-span-8 xl:flex-row xl:items-center md:order-3">
                                 <div className="flex flex-col items-end justify-center xl:items-center">
                                     <span className="inline-block text-7xl font-bold md:text-6xl sm:text-5xl xs:text-4xl">
-                                        <AnimatedNumbers value={profile.developerStatistic.programmingLanguagesLearned} />+
+                                        <AnimatedNumbers value={profile.developerStatistic?.programmingLanguagesLearned || 0} />+
                                     </span>
                                     <h2 className="text-lg font-medium capitalize text-dark/75 dark:text-light/75 xl:text-center md:text-lg
                                         sm:text-base xs:text-sm">
@@ -70,7 +71,7 @@ const about = async ({ params }) => {
                                 </div>
                                 <div className="flex flex-col items-end justify-center xl:items-center">
                                     <span className="inline-block text-7xl font-bold md:text-6xl sm:text-5xl xs:text-4xl">
-                                    <AnimatedNumbers value={profile.developerStatistic.completedProjects} />+
+                                        <AnimatedNumbers value={profile.developerStatistic?.completedProjects || 0} />+
                                     </span>
                                     <h2 className="text-lg font-medium capitalize text-dark/75 dark:text-light/75 xl:text-center md:text-lg
                                         sm:text-base xs:text-sm">
@@ -79,7 +80,7 @@ const about = async ({ params }) => {
                                 </div>
                                 <div className="flex flex-col items-end justify-center xl:items-center">
                                     <span className="inline-block text-7xl font-bold md:text-6xl sm:text-5xl xs:text-4xl">
-                                        <AnimatedNumbers value={profile.developerStatistic.technologiesLearned} />+
+                                        <AnimatedNumbers value={profile.developerStatistic?.technologiesLearned || 0} />+
                                     </span>
                                     <h2 className="text-lg font-medium capitalize text-dark/75 dark:text-light/75 xl:text-center md:text-lg
                                         sm:text-base xs:text-sm">

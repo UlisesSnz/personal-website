@@ -56,9 +56,9 @@ const Education = ({ education }) => {
             <Details
               key={data._id}
               type={data.name}
-              time={data.years.endYear
+              time={data.years?.endYear
                 ? `${data.years.startYear}-${data.years.endYear}`
-                : `${data.years.startYear}`
+                : `${data.years?.startYear || ''}`
               }
               place={data.studyCenter}
               info={data.description}
