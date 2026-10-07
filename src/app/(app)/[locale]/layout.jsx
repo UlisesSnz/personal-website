@@ -98,7 +98,7 @@ export default async function RootLayout({ children, params }) {
         : undefined;
 
     return (
-        <html lang={localeDefinition.regionalLocale} suppressHydrationWarning>
+        <html lang={localeDefinition.regionalLocale} data-scroll-behavior="smooth" suppressHydrationWarning>
             <body className={`${montserrat.variable} font-mont bg-light dark:bg-dark w-full min-h-screen`}>
                 <Script id='theme-switcher' strategy='afterInteractive'>
                     {`
