@@ -15,7 +15,16 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 
 ## 2026
 
-### Q4 (Oct-Dic) - Previsualizacion protegida de borradores
+### Q4 (Oct-Dic) - Previsualizacion protegida de borradores y responsive
+
+#### 9 de octubre - Responsive del blog y categorias
+
+- Se ajustaron ambos listados a dos columnas entre 768 y 1919 px y una columna en pantallas menores de 768 px, conservando cuatro columnas en blog y tres en categorias desde 1920 px.
+- Se reservo un menu lateral de 208 px con separacion de 32 px entre 1280 y 1919 px; por debajo de 1280 px se coloca encima del listado y en Full HD se conserva la distribucion anterior.
+- Se adapto `sizes` de las portadas en `next/image` al ancho de las tarjetas, los margenes y el menu lateral, manteniendo dimensiones, proporciones y textos completos.
+- Se conservaron las paginas como Server Components y se integro el responsive con los estados seguros de los borradores incompletos, sin agregar logica de viewport en el cliente.
+- Se aprobaron lint, build de produccion con Next.js 16.3.6 y los cuatro archivos de pruebas existentes. Se revisaron 42 configuraciones de escritorio, tablet y mobile en espanol e ingles y ambos temas, sin desbordamientos de texto ni superposicion de sombras.
+- Commit de referencia: [d39d1d1](https://github.com/UlisesSnz/personal-website/commit/d39d1d1c8bbc09b080cda3aaaa77769d0cab77de) - fix: mejorar responsive de blog y categorias.
 
 #### 5 de octubre
 
