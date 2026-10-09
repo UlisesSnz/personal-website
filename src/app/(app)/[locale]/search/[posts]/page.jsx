@@ -113,8 +113,8 @@ export default async function PostsPage({ params, searchParams }) {
             />
           </div>
         </div>
-        <div className="grid grid-cols-12 gap-y-8 gap-16 xl:gap-8 md:gap-x-0 mt-8">
-          <div className="col-span-2 lg:col-span-12">
+        <div className="grid grid-cols-12 3xl:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-1 gap-y-8 gap-16 3xl:gap-x-8 xl:gap-8 md:gap-x-0 mt-8">
+          <div className="col-span-2 3xl:col-span-1">
             <details
               className="border-[1px] border-solid border-dark dark:border-light rounded-xl p-4 sticky top-6 max-h-[80vh] overflow-hidden overflow-y-auto"
               open
@@ -139,8 +139,8 @@ export default async function PostsPage({ params, searchParams }) {
               </ul>
             </details>
           </div>
-          <div className="col-span-10 lg:col-span-12 font-medium max-w-max">
-            <div className="grid grid-cols-3 lg:grid-cols-2 sm:grid-cols-1 gap-6">
+          <div className="col-span-10 3xl:col-span-1 font-medium w-full min-w-0">
+            <div className="grid grid-cols-3 3xl:grid-cols-2 md:grid-cols-1 gap-6">
               {posts.map((post) => (
                 <PostCard
                   key={post._id}

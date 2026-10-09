@@ -8,6 +8,17 @@ import fallbackImage from '../../../public/images/profile/developer.png';
 
 const FramerImage = motion(Image);
 
+// Include the category sidebar, grid gaps, Layout padding, and card padding.
+const imageSizes = [
+  '(max-width: 479px) calc(100vw - 98px)',
+  '(max-width: 639px) calc(100vw - 114px)',
+  '(max-width: 767px) calc(100vw - 146px)',
+  '(max-width: 1023px) calc(50vw - 126px)',
+  '(max-width: 1279px) calc(50vw - 158px)',
+  '(max-width: 1919px) calc(50vw - 310px)',
+  'calc(27.778vw - 140.667px)',
+].join(', ');
+
 const PostCard = ({title, summary, categories, img, link, github }) => {
     const t = useTranslations('Post');
     const locale = useLocale();
@@ -23,6 +34,7 @@ const PostCard = ({title, summary, categories, img, link, github }) => {
         
         <Link href={link} className="w-full cursor-pointer overflow-hidden rounded-lg">
           <FramerImage src={img?.image || fallbackImage} width={img?.imageWidth || 1200} height={img?.imageHeight || 675} alt={title || ''} className="w-full h-auto"
+            sizes={imageSizes}
             whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}
           />
         </Link>

@@ -7,6 +7,16 @@ import fallbackImage from '../../../public/images/profile/developer.png';
 
 const FramerImage = motion(Image);
 
+// Match the blog grid, Layout padding, and the card's padding and borders.
+const imageSizes = [
+  '(max-width: 639px) calc(100vw - 98px)',
+  '(max-width: 767px) calc(100vw - 130px)',
+  '(max-width: 1023px) calc(50vw - 114px)',
+  '(max-width: 1279px) calc(50vw - 162px)',
+  '(max-width: 1919px) calc(50vw - 194px)',
+  'calc(25vw - 146px)',
+].join(', ');
+
 const FeaturedArticleCard = ({img, title, categories, summary, link, date}) => {
     const format = useFormatter();
     const locale = useLocale();
@@ -21,7 +31,7 @@ const FeaturedArticleCard = ({img, title, categories, summary, link, date}) => {
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
             priority
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
+            sizes={imageSizes}
             width={img?.imageWidth || 1200}
             height={img?.imageHeight || 675}
           />
