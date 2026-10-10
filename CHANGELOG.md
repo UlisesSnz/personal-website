@@ -17,6 +17,13 @@ Este changelog usa una organizacion trimestral para dar un panorama rapido del e
 
 ### Q4 (Oct-Dic) - Previsualizacion protegida de borradores y responsive
 
+#### 9 de octubre - Tres columnas en el blog
+
+- Se ajusto el blog a tres tarjetas por fila entre 1280 y 1919 px, manteniendo dos columnas entre 768 y 1279 px, una por debajo de 768 px y cuatro desde 1920 px. Las categorias conservan su distribucion.
+- A 1360 px, el ancho de las tarjetas se redujo de aproximadamente 513 a 320 px, conservando tipografia, textos completos, separaciones y proporciones de las portadas.
+- Se sincronizo `sizes` de `FeaturedArticleCard` con la cuadricula de tres columnas, sin agregar logica de viewport en el cliente ni modificar consultas de contenido.
+- Validacion: lint y build de produccion con Next.js 16.3.6 aprobados; 20 configuraciones del blog revisadas en espanol e ingles, incluidos mobile, limites de breakpoints y tema oscuro, sin desbordamientos ni sombras superpuestas. Se confirmaron las dos columnas de categorias a 1360 px.
+
 #### 9 de octubre - Responsive del blog y categorias
 
 - Se ajustaron ambos listados a dos columnas entre 768 y 1919 px y una columna en pantallas menores de 768 px, conservando cuatro columnas en blog y tres en categorias desde 1920 px.

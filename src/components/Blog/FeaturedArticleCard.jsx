@@ -13,7 +13,7 @@ const imageSizes = [
   '(max-width: 767px) calc(100vw - 130px)',
   '(max-width: 1023px) calc(50vw - 114px)',
   '(max-width: 1279px) calc(50vw - 162px)',
-  '(max-width: 1919px) calc(50vw - 194px)',
+  '(max-width: 1919px) calc(33.333vw - 162px)',
   'calc(25vw - 146px)',
 ].join(', ');
 
